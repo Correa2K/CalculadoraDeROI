@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de ROI</title>
+    <!-- Importando uma fonte moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #5563de;
+            --primary-hover: #4451b5;
+            --background-start: #cadef1;
+            --background-end: #c2c7f2;
+            --text-color: #333;
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+            --input-height: 2.75rem;
+            --form-gap: 1rem;
+        }
+
+        /* Reset básico e definição de fonte */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 1rem;
+        }
+
+        /* Container centralizado com efeito de card */
+        .container {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 1200px;
+            margin: 1rem;
+            animation: fadeIn 0.5s ease-out;
+            display: grid;
+            gap: 2rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Título */
+        h1 {
+            text-align: center;
+            margin-bottom: 0;
+            font-size: 1.8rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        /* Área de inputs */
+        .inputs-section {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Estilização do formulário */
+        form {
+            display: grid;
+            gap: var(--form-gap);
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input {
+            height: var(--input-height);
+            padding: 0 0.75rem;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: all var(--transition-speed) ease;
+            width: 100%;
+            background: #fff;
+        }
+
+        input:hover {
+            border-color: #ccc;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(85, 99, 222, 0.1);
+        }
+
+        /* Input com prefixo/sufixo */
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group input {
+            padding-left: 2rem;
+        }
+
+        .input-group.suffix input {
+            padding-right: 3.5rem;
+            padding-left: 0.75rem;
+        }
+
+        .input-prefix,
+        .input-suffix {
+            position: absolute;
+            color: #666;
+            font-size: 0.9rem;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .input-prefix {
+            left: 0.75rem;
+        }
+
+        .input-suffix {
+            right: 0.75rem;
+            max-width: 3rem;
+            text-align: right;
+        }
+
+        /* Botão de submit */
+        button[type="submit"] {
+            grid-column: 1 / -1;
+            height: var(--input-height);
+            border: none;
+            border-radius: var(--border-radius);
+            background: var(--primary-color);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        /* Estilização dos resultados */
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+
+        .result-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            display: grid;
+            gap: 1.5rem;
+            transition: all var(--transition-speed) ease;
+            border: 1px solid #e0e0e0;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            border: 2px solid var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .summary-card .result-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: nowrap;
+            gap: 1rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            min-width: 0;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .cpa-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            align-items: center;
+        }
+
+        .summary-cpa-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.25rem;
+            background: white;
+            border: 1px solid var(--primary-color);
+            border-radius: 2px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .result-cpa {
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            min-width: 0;
+            word-break: break-word;
+        }
+
+        .result-cpa::after {
+            content: 'CPA';
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+        .result-cac {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+            min-width: 0;
+        }
+
+        .result-cac-label {
+            font-size: 0.85rem;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .result-cac-value {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-value {
+            font-size: 1.25rem;
+            font-weight: 500;
+            word-break: break-word;
+            min-width: 0;
+            white-space: nowrap;
+            transform-origin: left center;
+            width: fit-content;
+            margin-right: auto;
+        }
+
+        .result-value.highlight {
+            font-size: 1.5rem;
+        }
+
+        .result-item.highlight {
+            background: #fff;
+            border: 2px solid;
+        }
+
+        .result-item.highlight.positive {
+            border-color: rgba(40, 167, 69, 0.2);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .result-item.highlight.negative {
+            border-color: rgba(220, 53, 69, 0.2);
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .result-value.positive {
+            color: #28a745;
+        }
+
+        .result-value.negative {
+            color: #dc3545;
+        }
+
+        /* Melhorias na responsividade */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+                margin: 0.5rem;
+            }
+
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+
+            .result-card {
+                padding: 1.25rem;
+                gap: 1.25rem;
+            }
+
+            .result-grid {
+                gap: 0.85rem;
+            }
+
+            .result-item {
+                padding: 0.65rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                gap: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            .inputs-section {
+                padding: 1rem;
+            }
+
+            .result-card {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .result-header {
+                padding-bottom: 0.85rem;
+            }
+
+            .result-grid {
+                gap: 0.75rem;
+            }
+
+            .result-item {
+                padding: 0.6rem;
+                gap: 0.3rem;
+            }
+
+            .result-cpa {
+                font-size: 1.75rem;
+            }
+
+            .result-cac-value {
+                font-size: 1.15rem;
+            }
+
+            .result-value {
+                font-size: 1.15rem;
+            }
+
+            .result-value.highlight {
+                font-size: 1.35rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.75rem;
+                margin: 0.25rem;
+            }
+
+            .inputs-section {
+                padding: 0.75rem;
+            }
+
+            h1 {
+                font-size: 1.35rem;
+            }
+
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+
+            .result-card {
+                padding: 0.85rem;
+                gap: 0.85rem;
+            }
+
+            .result-header {
+                padding-bottom: 0.75rem;
+            }
+
+            .result-cpa {
+                font-size: 1.5rem;
+            }
+
+            .result-cac-value {
+                font-size: 1rem;
+            }
+
+            .result-value {
+                font-size: 1rem;
+            }
+
+            .result-value.highlight {
+                font-size: 1.15rem;
+            }
+
+            .result-label {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 0.5rem;
+                margin: 0;
+            }
+
+            .inputs-section {
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            label {
+                font-size: 0.8rem;
+            }
+
+            input {
+                font-size: 0.85rem;
+                height: 2.5rem;
+            }
+
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .result-card {
+                padding: 0.75rem;
+                gap: 0.75rem;
+            }
+
+            .result-header {
+                padding-bottom: 0.65rem;
+            }
+
+            .result-cpa {
+                font-size: 1.35rem;
+            }
+
+            .result-cac-value {
+                font-size: 0.95rem;
+            }
+
+            .result-value {
+                font-size: 0.95rem;
+            }
+
+            .result-value.highlight {
+                font-size: 1.1rem;
+            }
+
+            .result-label {
+                font-size: 0.75rem;
+            }
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading button {
+            position: relative;
+        }
+
+        .loading button::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            to {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        /* Estilos para o input de CPAs */
+        .cpa-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            grid-column: 1 / -1;
+        }
+
+        .cpa-input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .cpa-input-wrapper input {
+            flex: 1;
+        }
+
+        .cpa-add-btn {
+            height: var(--input-height);
+            width: 2.5rem;
+            padding: 0;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .cpa-add-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
+        }
+
+        .cpa-add-btn:active {
+            transform: translateY(0);
+        }
+
+        .cpa-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            min-height: calc(var(--input-height) * 1.2);
+            padding: 0.25rem;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            background: #f8f9fa;
+            align-items: flex-start;
+        }
+
+        .cpa-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.1rem;
+            padding: 0.1rem 0.25rem;
+            background: white;
+            border: 1px solid var(--primary-color);
+            border-radius: 2px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            transition: all var(--transition-speed) ease;
+            animation: tagAppear 0.3s ease-out;
+        }
+
+        .cpa-tag:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 1px 2px rgba(85, 99, 222, 0.15);
+        }
+
+        .cpa-tag-remove {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            padding: 0;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: currentColor;
+            cursor: pointer;
+            font-size: 0.7rem;
+            line-height: 1;
+            border-radius: 2px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .cpa-tag:hover .cpa-tag-remove {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .cpa-tag-remove:hover {
+            background: rgba(220, 53, 69, 0.2) !important;
+            color: #dc3545;
+            transform: scale(1.1);
+        }
+
+        .cpa-error {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Calculadora de ROI</h1>
+
+        <section class="inputs-section">
+            <form id="calcForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="gastos">Gastos com Tráfego</label>
+                    <div class="input-group">
+                        <span class="input-prefix">R$</span>
+                        <input type="text" id="gastos" name="gastos" value="" required placeholder="0"
+                            inputmode="numeric" />
+                        <span class="input-suffix">/dia</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dias">Dias de Tráfego</label>
+                    <div class="input-group suffix">
+                        <input type="text" id="dias" name="dias" value="" required placeholder="1" maxlength="3"
+                            inputmode="numeric" />
+                        <span class="input-suffix">dias</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket">Ticket do Produto</label>
+                    <div class="input-group">
+                        <span class="input-prefix">R$</span>
+                        <input type="text" id="ticket" name="ticket" value="" required placeholder="0,00"
+                            inputmode="numeric" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="taxas">Taxas Descontadas</label>
+                    <div class="input-group suffix">
+                        <input type="text" id="taxas" name="taxas" value="" required placeholder="0" maxlength="2"
+                            inputmode="numeric" />
+                        <span class="input-suffix">%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="valorDescontado">Valor Descontado</label>
+                    <div class="input-group">
+                        <span class="input-prefix">R$</span>
+                        <input type="text" id="valorDescontado" name="valorDescontado" value="" required
+                            placeholder="0,00" inputmode="numeric" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="cpaInput">CPAs (%)</label>
+                    <div class="cpa-input-container">
+                        <div class="cpa-input-wrapper">
+                            <div class="input-group suffix">
+                                <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric" />
+                                <span class="input-suffix">%</span>
+                            </div>
+                            <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
+                        </div>
+                        <div class="cpa-tags" id="cpaTags"></div>
+                        <input type="hidden" id="cpa" name="cpa" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="full-width">Calcular ROI</button>
+            </form>
+        </section>
+
+        <section class="result-container" id="result"></section>
+    </main>
+
+    <script>
+        function round(value, decimals) {
+            return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function formatNumber(value, decimals = 2) {
+            return new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(value);
+        }
+
+        // Format number inputs on blur
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('blur', function () {
+                if (this.value) {
+                    const step = this.getAttribute('step');
+                    const decimals = step.includes('.') ? step.split('.')[1].length : 0;
+                    this.value = round(parseFloat(this.value), decimals);
+                }
+            });
+        });
+
+        // Formatação de valores monetários
+        function formatMoneyInput(value, showDecimals = true) {
+            // Remove tudo que não é número
+            value = value.replace(/\D/g, '');
+
+            // Se o valor estiver vazio, retorna 0
+            if (!value) {
+                return '0';
+            }
+
+            // Se deve mostrar decimais, divide por 100 para posicionar a vírgula
+            if (showDecimals) {
+                value = (parseInt(value) / 100).toFixed(2);
+            } else {
+                value = parseInt(value);
+            }
+
+            // Converte para o formato brasileiro
+            value = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: showDecimals ? 2 : 0,
+                maximumFractionDigits: showDecimals ? 2 : 0,
+            }).format(value);
+
+            return value;
+        }
+
+        // Aplicar formatação nos inputs monetários
+        ['gastos', 'ticket', 'valorDescontado'].forEach(id => {
+            const input = document.getElementById(id);
+            const showDecimals = id !== 'gastos'; // Não mostra decimais para o campo de gastos
+
+            input.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
+
+                // Limita a 10 dígitos (incluindo centavos para campos com decimais)
+                if (value.length > (showDecimals ? 10 : 8)) {
+                    value = value.slice(0, showDecimals ? 10 : 8);
+                }
+
+                // Garante que sempre tenha pelo menos 3 dígitos para campos com decimais
+                if (showDecimals && value.length <= 2) {
+                    value = value.padStart(3, '0');
+                }
+
+                // Armazena o valor puro para cálculos
+                e.target.dataset.value = value;
+
+                // Formata o valor para exibição
+                e.target.value = formatMoneyInput(value, showDecimals);
+            });
+
+            input.addEventListener('blur', function (e) {
+                if (!e.target.value.trim()) {
+                    e.target.value = '0';
+                    e.target.dataset.value = '0';
+                } else {
+                    const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
+                    e.target.value = formatMoneyInput(value, showDecimals);
+                }
+            });
+        });
+
+        // Limitar dias de tráfego a 3 dígitos
+        const diasInput = document.getElementById('dias');
+        diasInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 3) {
+                value = value.slice(0, 3);
+            }
+            e.target.value = value;
+        });
+
+        // Limitar taxas a 2 dígitos
+        const taxasInput = document.getElementById('taxas');
+        taxasInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.slice(0, 2);
+            }
+            e.target.value = value;
+        });
+
+        // Limitar CPAs a 2 dígitos
+        const cpaInput = document.getElementById('cpaInput');
+        cpaInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.slice(0, 2);
+            }
+            e.target.value = value;
+        });
+
+        // Função para gerenciar os CPAs
+        function setupCPAInput() {
+            const input = document.getElementById('cpaInput');
+            const addBtn = document.getElementById('cpaAdd');
+            const tagsContainer = document.getElementById('cpaTags');
+            const hiddenInput = document.getElementById('cpa');
+            let cpaValues = [30, 40, 50, 60]; // Valores iniciais
+
+            function updateHiddenInput() {
+                hiddenInput.value = cpaValues.join('\n');
+            }
+
+            function addTag(value) {
+                const tag = document.createElement('div');
+                tag.className = 'cpa-tag';
+                tag.innerHTML = `
+                    ${Math.round(value)}%
+                    <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
+                `;
+
+                tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
+                    tag.style.transform = 'scale(0.8)';
+                    tag.style.opacity = '0';
+                    setTimeout(() => {
+                        cpaValues = cpaValues.filter(v => v !== value);
+                        tag.remove();
+                        updateHiddenInput();
+                    }, 200);
+                });
+
+                tagsContainer.appendChild(tag);
+            }
+
+            function addCPA(value) {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue) && numValue > 0 && numValue <= 100) {
+                    if (!cpaValues.includes(numValue)) {
+                        cpaValues.push(numValue);
+                        cpaValues.sort((a, b) => a - b);
+                        // Limpar e recriar todas as tags para manter a ordem
+                        tagsContainer.innerHTML = '';
+                        cpaValues.forEach(value => addTag(value));
+                        updateHiddenInput();
+                    }
+                    input.value = '';
+                }
+            }
+
+            // Adicionar os valores iniciais
+            cpaValues.forEach(value => addTag(value));
+            updateHiddenInput();
+
+            // Event listeners
+            addBtn.addEventListener('click', () => addCPA(input.value));
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCPA(input.value);
+                }
+            });
+        }
+
+        // Inicializar o input de CPAs
+        setupCPAInput();
+
+        // Função para salvar os valores no localStorage
+        function saveFormValues() {
+            const formValues = {
+                gastos: document.getElementById("gastos").value,
+                dias: document.getElementById("dias").value,
+                ticket: document.getElementById("ticket").value,
+                taxas: document.getElementById("taxas").value,
+                valorDescontado: document.getElementById("valorDescontado").value,
+                cpaValues: document.getElementById("cpa").value
+            };
+            localStorage.setItem('roiCalculatorValues', JSON.stringify(formValues));
+        }
+
+        // Função para carregar os valores do localStorage
+        function loadFormValues() {
+            const savedValues = localStorage.getItem('roiCalculatorValues');
+            if (savedValues) {
+                const formValues = JSON.parse(savedValues);
+
+                // Preencher os inputs com os valores salvos
+                document.getElementById("gastos").value = formValues.gastos;
+                document.getElementById("dias").value = formValues.dias;
+                document.getElementById("ticket").value = formValues.ticket;
+                document.getElementById("taxas").value = formValues.taxas;
+                document.getElementById("valorDescontado").value = formValues.valorDescontado;
+
+                // Limpar e recriar as tags de CPA
+                const cpaTags = document.getElementById("cpaTags");
+                cpaTags.innerHTML = '';
+
+                // Converter os CPAs salvos em array e adicionar as tags
+                const cpaList = formValues.cpaValues
+                    .split(/\r?\n/)
+                    .map(item => item.trim())
+                    .filter(item => item !== "")
+                    .map(item => parseFloat(item))
+                    .sort((a, b) => a - b);
+
+                // Atualizar o input hidden com os valores dos CPAs
+                document.getElementById("cpa").value = formValues.cpaValues;
+
+                // Recriar as tags visualmente
+                cpaList.forEach(value => {
+                    const tag = document.createElement('div');
+                    tag.className = 'cpa-tag';
+                    tag.innerHTML = `
+                        ${Math.round(value)}%
+                        <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
+                    `;
+
+                    tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
+                        tag.style.transform = 'scale(0.8)';
+                        tag.style.opacity = '0';
+                        setTimeout(() => {
+                            const cpaValues = document.getElementById("cpa").value
+                                .split(/\r?\n/)
+                                .map(item => parseFloat(item.trim()))
+                                .filter(v => v !== value)
+                                .join('\n');
+                            document.getElementById("cpa").value = cpaValues;
+                            tag.remove();
+                        }, 200);
+                    });
+
+                    cpaTags.appendChild(tag);
+                });
+            }
+        }
+
+        // Carregar valores salvos quando a página carregar
+        document.addEventListener('DOMContentLoaded', loadFormValues);
+
+        document.getElementById("calcForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            // Salvar os valores no localStorage
+            saveFormValues();
+
+            const form = this;
+            form.classList.add('loading');
+
+            // Simulate a small delay for better UX
+            setTimeout(() => {
+                const gastos = parseFloat(document.getElementById("gastos").value.replace(/\./g, '').replace(',', '.'));
+                const dias = parseInt(document.getElementById("dias").value);
+                const ticket = parseFloat(document.getElementById("ticket").value.replace(/\./g, '').replace(',', '.'));
+                const taxas = parseFloat(document.getElementById("taxas").value);
+                const valorDescontado = parseFloat(document.getElementById("valorDescontado").value.replace(/\./g, '').replace(',', '.'));
+
+                const cpaInput = document.getElementById("cpa").value;
+                let cpaList = cpaInput
+                    .split(/\r?\n/)
+                    .map(item => item.trim())
+                    .filter(item => item !== "")
+                    .map(item => parseFloat(item))
+                    .sort((a, b) => a - b);
+
+                if (isNaN(gastos) || isNaN(dias) || isNaN(ticket) || isNaN(taxas) || isNaN(valorDescontado) || cpaList.length === 0) {
+                    alert("Por favor, preencha todos os campos com valores válidos.");
+                    form.classList.remove('loading');
+                    return;
+                }
+
+                let html = "";
+
+                // Adicionar card de resumo
+                const minCPA = Math.min(...cpaList);
+                const maxCPA = Math.max(...cpaList);
+                const totalGastos = gastos * dias;
+
+                html += `
+                    <div class="result-card summary-card">
+                        <div class="result-header">
+                            <div class="result-title">Resumo Geral</div>
+                        </div>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Ticket do Produto</div>
+                                <div class="result-value">${formatCurrency(ticket)}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Taxa por Venda</div>
+                                <div class="result-value">${formatCurrency(ticket * (taxas / 100) + valorDescontado)} - (${taxas}% + ${formatCurrency(valorDescontado)})</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Gastos com Tráfego</div>
+                                <div class="result-value">${formatCurrency(gastos)} / ${dias} dia${dias > 1 ? 's' : ''}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">CPAs Selecionados</div>
+                                <div class="result-value cpa-summary">
+                                    ${cpaList.map(cpa => `<span class="summary-cpa-tag">${Math.round(cpa)}%</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="results-grid">
+                `;
+
+                // Resultados individuais por CPA
+                cpaList.forEach(cpa => {
+                    const cpaDecimal = cpa / 100;
+                    const cac = round(ticket * cpaDecimal, 2);
+                    const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+                    const faturamento = round(qtdVendas * ticket, 2);
+                    const taxasTotais = round(qtdVendas * ((ticket * (taxas / 100)) + valorDescontado), 2);
+                    const lucro = round(
+                        (ticket - (ticket * (taxas / 100)) - valorDescontado) * qtdVendas - gastos * dias,
+                        2
+                    );
+                    const roi = round((lucro / (gastos * dias)) * 100, 2);
+
+                    html += `
+                        <div class="result-card">
+                            <div class="result-header">
+                                <div class="result-cpa">${Math.round(cpa)}%</div>
+                                <div class="result-cac">
+                                    <span class="result-cac-label">Custo de Aquisição</span>
+                                    <span class="result-cac-value">${formatCurrency(cac)}</span>
+                                </div>
+                            </div>
+                            <div class="result-grid">
+                                <div class="result-item">
+                                    <div class="result-label">Qtd. Vendas</div>
+                                    <div class="result-value">~ ${qtdVendas}</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Faturamento</div>
+                                    <div class="result-value">${formatCurrency(faturamento)}</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Total em Taxas</div>
+                                    <div class="result-value">${formatCurrency(taxasTotais)}</div>
+                                </div>
+                                <div class="result-item highlight ${lucro >= 0 ? 'positive' : 'negative'}">
+                                    <div class="result-label">Lucro Líquido</div>
+                                    <div class="result-value highlight ${lucro >= 0 ? 'positive' : 'negative'}">
+                                        ${formatCurrency(lucro)}
+                                    </div>
+                                </div>
+                                <div class="result-item highlight ${roi >= 0 ? 'positive' : 'negative'}">
+                                    <div class="result-label">ROI (%)</div>
+                                    <div class="result-value highlight ${roi >= 0 ? 'positive' : 'negative'}">
+                                        ${formatNumber(roi)}%
+                                    </div>
+                                </div>
+                                <div class="result-item highlight ${faturamento - taxasTotais >= gastos * dias ? 'positive' : 'negative'}">
+                                    <div class="result-label">ROI (x)</div>
+                                    <div class="result-value highlight ${faturamento - taxasTotais >= gastos * dias ? 'positive' : 'negative'}">
+                                        ${formatNumber((faturamento - taxasTotais) / (gastos * dias))}x
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>'; // Fechando results-grid
+
+                document.getElementById("result").innerHTML = html;
+                form.classList.remove('loading');
+            }, 300);
+        });
+
+        function adjustResultValues() {
+            document.querySelectorAll('.result-value').forEach(element => {
+                const parent = element.parentElement;
+                const parentWidth = parent.clientWidth - 4; // 4px de margem de segurança
+                const elementWidth = element.scrollWidth;
+
+                if (elementWidth > parentWidth) {
+                    const scale = (parentWidth / elementWidth) * 0.90; // 98% do tamanho máximo para garantir que caiba
+                    element.style.transform = `scale(${scale})`;
+                    element.style.transformOrigin = 'left center';
+                } else {
+                    element.style.transform = 'none';
+                }
+            });
+        }
+
+        // Ajustar valores quando o resultado for atualizado
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.target.id === 'result' && mutation.addedNodes.length > 0) {
+                    setTimeout(adjustResultValues, 0);
+                }
+            });
+        });
+
+        observer.observe(document.getElementById('result'), { childList: true, subtree: true });
+
+        // Ajustar valores quando a janela for redimensionada
+        window.addEventListener('resize', adjustResultValues);
+
+        // Ajustar valores iniciais se houver
+        document.addEventListener('DOMContentLoaded', adjustResultValues);
+    </script>
+</body>
+
+</html>
