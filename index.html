@@ -722,7 +722,7 @@
                 <div class="form-group">
                     <label for="taxas">Taxas Descontadas</label>
                     <div class="input-group suffix">
-                        <input type="text" id="taxas" name="taxas" value="" required placeholder="0" maxlength="2"
+                        <input type="text" id="taxas" name="taxas" value="" required placeholder="0"
                             inputmode="numeric" />
                         <span class="input-suffix">%</span>
                     </div>
@@ -865,10 +865,45 @@
         const taxasInput = document.getElementById('taxas');
         taxasInput.addEventListener('input', function (e) {
             let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 2) {
-                value = value.slice(0, 2);
+
+            // Limita a 5 dígitos (3 inteiros + 2 decimais)
+            if (value.length > 5) {
+                value = value.slice(0, 5);
             }
-            e.target.value = value;
+
+            // Garante que sempre tenha pelo menos 3 dígitos
+            if (value.length <= 2) {
+                value = value.padStart(3, '0');
+            }
+
+            // Armazena o valor puro para cálculos
+            e.target.dataset.value = value;
+
+            // Formata o valor para exibição
+            const numericValue = parseFloat(value) / 100;
+            if (numericValue > 100) {
+                value = '10000';
+                e.target.dataset.value = '10000';
+            }
+
+            e.target.value = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(numericValue);
+        });
+
+        taxasInput.addEventListener('blur', function (e) {
+            if (!e.target.value.trim()) {
+                e.target.value = '0,00';
+                e.target.dataset.value = '0';
+            } else {
+                const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
+                const numericValue = parseFloat(value) / 100;
+                e.target.value = new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                }).format(numericValue);
+            }
         });
 
         // Limitar CPAs a 2 dígitos
@@ -1032,7 +1067,7 @@
                 const gastos = parseFloat(document.getElementById("gastos").value.replace(/\./g, '').replace(',', '.'));
                 const dias = parseInt(document.getElementById("dias").value);
                 const ticket = parseFloat(document.getElementById("ticket").value.replace(/\./g, '').replace(',', '.'));
-                const taxas = parseFloat(document.getElementById("taxas").value);
+                const taxas = parseFloat(document.getElementById("taxas").value.replace(/\./g, '').replace(',', '.'));
                 const valorDescontado = parseFloat(document.getElementById("valorDescontado").value.replace(/\./g, '').replace(',', '.'));
 
                 const cpaInput = document.getElementById("cpa").value;
