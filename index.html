@@ -365,6 +365,30 @@
             color: #dc3545;
         }
 
+        .sales-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sales-total {
+            font-size: 1em;
+        }
+        .sales-breakdown {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.65em;
+            color: rgba(224, 224, 224, 0.7);
+            gap: 2px;
+            border-left: 1px solid rgba(224, 224, 224, 0.2);
+            padding-left: 12px;
+            line-height: 1.2;
+        }
+
+        .sophisticated {
+            font-style: italic;
+            opacity: 0.85;
+        }
+
         @media (max-width: 1024px) {
             .container {
                 max-width: 95%;
@@ -1419,6 +1443,19 @@
                 let html = "";
                 const totalGastos = gastos * dias;
 
+                // Calcular Break-even Point
+                const custosPorVenda = ticket * (taxas / 100) + valorDescontado; // custos por venda (taxas + desconto)
+                const breakEvenPoints = cpaList.map(cpa => {
+                    const cpaDecimal = cpa / 100;
+                    const custoPorLeadCPA = ticket * cpaDecimal; // custo de aquisição por venda
+                    const totalCustosPorVenda = custosPorVenda + custoPorLeadCPA; // total de custos por venda
+                    const margemPorVenda = ticket - totalCustosPorVenda; // margem por venda
+                    return Math.ceil(totalGastos / margemPorVenda); // vendas necessárias para break-even
+                });
+
+                // Encontrar o menor break-even point
+                const menorBreakEven = Math.min(...breakEvenPoints);
+
                 // ---- Card de Resumo Geral ----
                 html += `
         <div class="result-card summary-card">
@@ -1465,7 +1502,6 @@
                         (ticket - (ticket * (taxas / 100)) - valorDescontado) * qtdVendas - totalGastos,
                         2
                     );
-                    const roi = round((lucro / totalGastos) * 100, 2);
 
                     html += `
           <div class="result-card">
@@ -1479,7 +1515,23 @@
             <div class="result-grid">
               <div class="result-item">
                 <div class="result-label">Qtd. Vendas</div>
-                <div class="result-value">~ ${qtdVendas}</div>
+                <div class="result-value sales-details">
+                  <div class="sales-total">~ ${formatCompactNumber(qtdVendas)}</div>
+                  <div class="sales-breakdown">
+                    <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias))} · dia</span>
+                    <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias/12))} · hora</span>
+                  </div>
+                </div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">Break-even</div>
+                <div class="result-value sales-details">
+                  <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100)))))}</div>
+                  <div class="sales-breakdown">
+                    <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100))))/dias))} · dia</span>
+                    <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100))))/dias/12))} · hora</span>
+                  </div>
+                </div>
               </div>
               <div class="result-item">
                 <div class="result-label">Faturamento</div>
@@ -1489,22 +1541,28 @@
                 <div class="result-label">Total em Taxas</div>
                 <div class="result-value">${formatCurrency(taxasTotais)}</div>
               </div>
+              <div class="result-item">
+                <div class="result-label">Lucro Bruto</div>
+                <div class="result-value">
+                  ${formatCurrency(faturamento - taxasTotais)}
+                </div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">ROI BRUTO (x)</div>
+                <div class="result-value">
+                  ${formatNumber((faturamento - taxasTotais) / totalGastos)}x
+                </div>
+              </div>
               <div class="result-item highlight ${lucro >= 0 ? 'positive' : 'negative'}">
                 <div class="result-label">Lucro Líquido</div>
                 <div class="result-value highlight ${lucro >= 0 ? 'positive' : 'negative'}">
                   ${formatCurrency(lucro)}
                 </div>
               </div>
-              <div class="result-item highlight ${roi >= 0 ? 'positive' : 'negative'}">
-                <div class="result-label">ROI (%)</div>
-                <div class="result-value highlight ${roi >= 0 ? 'positive' : 'negative'}">
-                  ${formatNumber(roi)}%
-                </div>
-              </div>
-              <div class="result-item highlight ${faturamento - taxasTotais >= totalGastos ? 'positive' : 'negative'}">
-                <div class="result-label">ROI (x)</div>
-                <div class="result-value highlight ${faturamento - taxasTotais >= totalGastos ? 'positive' : 'negative'}">
-                  ${formatNumber((faturamento - taxasTotais) / totalGastos)}x
+              <div class="result-item highlight ${(faturamento - taxasTotais - gastos) / totalGastos >= 0 ? 'positive' : 'negative'}">
+                <div class="result-label">ROI LÍQUIDO (x)</div>
+                <div class="result-value highlight ${(faturamento - taxasTotais - gastos) / totalGastos >= 0 ? 'positive' : 'negative'}">
+                  ${formatNumber((faturamento - taxasTotais - gastos) / totalGastos)}x
                 </div>
               </div>
             </div>
@@ -1540,15 +1598,6 @@
                     const cpaDecimal = cpa / 100;
                     const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
                     return round(qtdVendas * ticket, 2);
-                });
-                const roiData = cpaList.map(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-                    const lucro = round(
-                        (ticket - (ticket * (taxas / 100)) - valorDescontado) * qtdVendas - totalGastos,
-                        2
-                    );
-                    return round((lucro / totalGastos) * 100, 2);
                 });
 
                 const ctx = document.getElementById('resultsChart').getContext('2d');
@@ -1587,13 +1636,6 @@
                                 backgroundColor: 'rgba(85, 99, 222, 1)',
                                 borderWidth: 0,
                                 yAxisID: 'currencyAxis'
-                            },
-                            {
-                                label: 'ROI (%)',
-                                data: roiData,
-                                backgroundColor: 'rgba(255, 193, 7, 1)',
-                                borderWidth: 0,
-                                yAxisID: 'percentAxis'
                             }
                         ]
                     },
@@ -1636,17 +1678,6 @@
                                     callback: (value) => formatCompactNumber(value),
                                     font: { size: window.innerWidth <= 768 ? 10 : 12 },
                                 }
-                            },
-                            // Minimal axis for ROI (%)
-                            percentAxis: {
-                                type: 'linear',
-                                display: false,
-                                position: 'right',
-                                grid: { display: false, drawBorder: false },
-                                ticks: {
-                                    callback: (value) => `${value}%`,
-                                    font: { size: window.innerWidth <= 768 ? 10 : 12 },
-                                }
                             }
                         },
                         plugins: {
@@ -1667,7 +1698,7 @@
                                     ci.setDatasetVisibility(index, !ci.isDatasetVisible(index));
                                     // Check which axes remain in use
                                     const ds = ci.data.datasets;
-                                    const axesUsed = { vendasAxis: false, currencyAxis: false, percentAxis: false };
+                                    const axesUsed = { vendasAxis: false, currencyAxis: false };
                                     ds.forEach((d, i) => {
                                         if (ci.isDatasetVisible(i)) {
                                             axesUsed[d.yAxisID] = true;
@@ -1696,9 +1727,6 @@
                                     label: function (context) {
                                         const label = context.dataset.label || '';
                                         const value = context.parsed.y;
-                                        if (label === 'ROI (%)') {
-                                            return `${label}: ${formatNumber(value)}%`;
-                                        }
                                         if (label === 'Qtd. Vendas') {
                                             return `${label}: ${formatCompactNumber(value)}`;
                                         }
@@ -1712,7 +1740,7 @@
                 });
 
                 // Initially show all relevant axes
-                const initialAxesUsed = { vendasAxis: false, currencyAxis: false, percentAxis: false };
+                const initialAxesUsed = { vendasAxis: false, currencyAxis: false };
                 chart.data.datasets.forEach((d, i) => {
                     if (chart.isDatasetVisible(i)) {
                         initialAxesUsed[d.yAxisID] = true;
