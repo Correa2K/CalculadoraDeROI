@@ -1,1794 +1,1629 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculadora de ROI</title>
-    <!-- Importando uma fonte moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-    <!-- Add Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary-color: #BB86FC;
-            --primary-hover: #9B68E1;
-            --background-start: #121212;
-            --background-end: #121212;
-            --container-bg: #1E1E1E;
-            --inputs-bg: #2C2C2C;
-            --card-bg: #1E1E1E;
-            --input-bg: #2C2C2C;
-            --input-border: #3A3A3A;
-            --text-color: #E0E0E0;
-            --border-radius: 8px;
-            --transition-speed: 0.3s;
-            --input-height: 2.75rem;
-            --form-gap: 1rem;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, var(--background-start), var(--background-end));
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 1rem;
-        }
-
-        .container {
-            background: var(--container-bg);
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 1200px;
-            margin: 1rem;
-            animation: fadeIn 0.5s ease-out;
-            display: grid;
-            gap: 2rem;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 0;
-            font-size: 1.8rem;
-            color: var(--text-color);
-            font-weight: 500;
-        }
-
-        .inputs-section {
-            background: var(--inputs-bg);
-            padding: 1.25rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--input-border);
-        }
-
-        form {
-            display: grid;
-            gap: var(--form-gap);
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-weight: 500;
-            color: #bdc3c7;
-            font-size: 0.9rem;
-        }
-
-        input {
-            height: var(--input-height);
-            padding: 0 0.75rem;
-            border: 1px solid var(--input-border);
-            border-radius: var(--border-radius);
-            font-size: 0.95rem;
-            transition: all var(--transition-speed) ease;
-            width: 100%;
-            background: var(--input-bg);
-            color: var(--text-color);
-        }
-
-        input:hover {
-            border-color: #ccc;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(85, 99, 222, 0.1);
-        }
-
-        .input-group {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-group input {
-            padding-left: 2rem;
-        }
-
-        .input-group.suffix input {
-            padding-right: 3.5rem;
-            padding-left: 0.75rem;
-        }
-
-        .input-prefix,
-        .input-suffix {
-            position: absolute;
-            color: #bdc3c7;
-            font-size: 0.9rem;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .input-prefix {
-            left: 0.75rem;
-        }
-
-        .input-suffix {
-            right: 0.75rem;
-            max-width: 3rem;
-            text-align: right;
-        }
-
-        button[type="submit"] {
-            grid-column: 1 / -1;
-            height: var(--input-height);
-            border: none;
-            border-radius: var(--border-radius);
-            background: var(--primary-color);
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        button[type="submit"]:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
-        }
-
-        button[type="submit"]:active {
-            transform: translateY(0);
-        }
-
-        .result-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .results-grid {
-            display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        }
-
-        .result-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-            padding: 1.5rem;
-            display: grid;
-            gap: 1.5rem;
-            transition: all var(--transition-speed) ease;
-            border: 1px solid var(--input-border);
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .summary-card {
-            background: var(--card-bg);
-            border: 2px solid var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .summary-card .result-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-            flex-wrap: nowrap;
-            gap: 1rem;
-        }
-
-        .result-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            min-width: 0;
-        }
-
-        .result-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            padding: 0.75rem;
-            background: #242424;
-            border-radius: var(--border-radius);
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        .result-title {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-
-        .cpa-summary {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-            align-items: center;
-        }
-
-        .summary-cpa-tag {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.1rem 0.25rem;
-            background: rgb(31, 30, 30);
-            border: 1px solid var(--primary-color);
-            border-radius: 2px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-
-        .result-cpa {
-            font-size: 2rem;
-            font-weight: 500;
-            color: var(--primary-color);
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            min-width: 0;
-            word-break: break-word;
-        }
-
-        .result-cpa::after {
-            content: 'CPA';
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: normal;
-            white-space: nowrap;
-        }
-
-        .result-cac {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.25rem;
-            min-width: 0;
-        }
-
-        .result-cac-label {
-            font-size: 0.85rem;
-            color: #666;
-            white-space: nowrap;
-        }
-
-        .result-cac-value {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: var(--text-color);
-            word-break: break-word;
-        }
-
-        .result-label {
-            font-size: 0.85rem;
-            color: #666;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .result-value {
-            font-size: 1.25rem;
-            font-weight: 500;
-            word-break: break-word;
-            min-width: 0;
-            white-space: nowrap;
-            transform-origin: left center;
-            width: fit-content;
-            margin-right: auto;
-        }
-
-        .result-value.highlight {
-            font-size: 1.5rem;
-        }
-
-        .result-item.highlight {
-            background: #fff;
-            border: 2px solid;
-        }
-
-        .result-item.highlight.positive {
-            border-color: rgba(40, 167, 69, 0.2);
-            background: rgba(40, 167, 69, 0.05);
-        }
-
-        .result-item.highlight.negative {
-            border-color: rgba(220, 53, 69, 0.2);
-            background: rgba(220, 53, 69, 0.05);
-        }
-
-        .result-value.positive {
-            color: #28a745;
-        }
-
-        .result-value.negative {
-            color: #dc3545;
-        }
-
-        .sales-details {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .sales-total {
-            font-size: 1em;
-        }
-        .sales-breakdown {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.65em;
-            color: rgba(224, 224, 224, 0.7);
-            gap: 2px;
-            border-left: 1px solid rgba(224, 224, 224, 0.2);
-            padding-left: 12px;
-            line-height: 1.2;
-        }
-
-        .sophisticated {
-            font-style: italic;
-            opacity: 0.85;
-        }
-
-        @media (max-width: 1024px) {
-            .container {
-                max-width: 95%;
-                margin: 0.5rem;
-            }
-
-            .results-grid {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            }
-
-            .result-card {
-                padding: 1.25rem;
-                gap: 1.25rem;
-            }
-
-            .result-grid {
-                gap: 0.85rem;
-            }
-
-            .result-item {
-                padding: 0.65rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-                gap: 1.5rem;
-                margin: 0.5rem;
-            }
-
-            .inputs-section {
-                padding: 1rem;
-            }
-
-            .result-card {
-                padding: 1rem;
-                gap: 1rem;
-            }
-
-            .result-header {
-                padding-bottom: 0.85rem;
-            }
-
-            .result-grid {
-                gap: 0.75rem;
-            }
-
-            .result-item {
-                padding: 0.6rem;
-                gap: 0.3rem;
-            }
-
-            .result-cpa {
-                font-size: 1.75rem;
-            }
-
-            .result-cac-value {
-                font-size: 1.15rem;
-            }
-
-            .result-value {
-                font-size: 1.15rem;
-            }
-
-            .result-value.highlight {
-                font-size: 1.35rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 0.75rem;
-                margin: 0.25rem;
-            }
-
-            .inputs-section {
-                padding: 0.75rem;
-            }
-
-            h1 {
-                font-size: 1.35rem;
-            }
-
-            .results-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-
-            .result-card {
-                padding: 0.85rem;
-                gap: 0.85rem;
-            }
-
-            .result-header {
-                padding-bottom: 0.75rem;
-            }
-
-            .result-cpa {
-                font-size: 1.5rem;
-            }
-
-            .result-cac-value {
-                font-size: 1rem;
-            }
-
-            .result-value {
-                font-size: 1rem;
-            }
-
-            .result-value.highlight {
-                font-size: 1.15rem;
-            }
-
-            .result-label {
-                font-size: 0.8rem;
-            }
-
-            .calc-history-container {
-                grid-template-columns: 1fr;
-            }
-
-            .history-body {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.3rem;
-            }
-
-            .history-item {
-                padding: 0.3rem 0.4rem;
-            }
-
-            .history-header {
-                font-size: 0.8rem;
-            }
-
-            .history-label {
-                font-size: 0.7rem;
-            }
-
-            .history-value {
-                font-size: 0.8rem;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .container {
-                padding: 0.5rem;
-                margin: 0;
-            }
-
-            .inputs-section {
-                padding: 0.5rem;
-            }
-
-            h1 {
-                font-size: 1.75rem;
-            }
-
-            label {
-                font-size: 0.8rem;
-            }
-
-            input {
-                font-size: 0.85rem;
-                height: 2.5rem;
-            }
-
-            .results-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-
-            .result-card {
-                padding: 0.75rem;
-                gap: 0.75rem;
-            }
-
-            .result-header {
-                padding-bottom: 0.65rem;
-            }
-
-            .result-cpa {
-                font-size: 1.35rem;
-            }
-
-            .result-cac-value {
-                font-size: 0.95rem;
-            }
-
-            .result-value {
-                font-size: 0.95rem;
-            }
-
-            .result-value.highlight {
-                font-size: 1.1rem;
-            }
-
-            .result-label {
-                font-size: 0.75rem;
-            }
-        }
-
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .loading button {
-            position: relative;
-        }
-
-        .loading button::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 0.8s linear infinite;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        @keyframes spin {
-            to {
-                transform: translateY(-50%) rotate(360deg);
-            }
-        }
-
-        .cpa-input-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            grid-column: 1 / -1;
-        }
-
-        .cpa-input-wrapper {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .cpa-input-wrapper input {
-            flex: 1;
-        }
-
-        .cpa-add-btn {
-            height: var(--input-height);
-            width: 4rem;
-            padding: 0;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: 500;
-            transition: all var(--transition-speed) ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-
-        .cpa-add-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
-        }
-
-        .cpa-add-btn:active {
-            transform: translateY(0);
-        }
-
-        .cpa-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.25rem;
-            min-height: calc(var(--input-height) * 1.2);
-            padding: 0.25rem;
-            border: 1px solid var(--input-border);
-            border-radius: var(--border-radius);
-            background: var(--input-bg);
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        .cpa-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.1rem;
-            padding: 0.1rem 0.25rem;
-            background: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            border-radius: 2px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #444343;
-            transition: all var(--transition-speed) ease;
-            animation: tagAppear 0.3s ease-out;
-        }
-
-        .cpa-tag:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 1px 2px rgba(85, 99, 222, 0.15);
-        }
-
-        .cpa-tag-remove {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 12px;
-            height: 12px;
-            padding: 0;
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            color: currentColor;
-            cursor: pointer;
-            font-size: 0.7rem;
-            line-height: 1;
-            border-radius: 2px;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .cpa-tag:hover .cpa-tag-remove {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .cpa-tag-remove:hover {
-            background: rgba(220, 53, 69, 0.2) !important;
-            color: #dc3545;
-            transform: scale(1.1);
-        }
-
-        .cpa-error {
-            color: #dc3545;
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-        }
-
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-top: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--input-border);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .chart-container canvas {
-            width: 100% !important;
-            height: 450px !important;
-            min-width: 300px;
-        }
-
-        @media (max-width: 768px) {
-            .chart-container {
-                padding: 1rem;
-                margin-top: 1.5rem;
-            }
-
-            .chart-container canvas {
-                height: 350px !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chart-container {
-                padding: 0.75rem;
-                margin-top: 1rem;
-            }
-
-            .chart-container canvas {
-                height: 300px !important;
-            }
-        }
-
-        /* ================== Estilos dos Inputs e Formulário ================== */
-        .inputs-section {
-            background: var(--inputs-bg);
-            padding: 1.25rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--input-border);
-        }
-
-        form {
-            display: grid;
-            gap: var(--form-gap);
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-weight: 500;
-            color: #bdc3c7;
-            font-size: 0.9rem;
-        }
-
-        input {
-            height: var(--input-height);
-            padding: 0 0.75rem;
-            border: 1px solid var(--input-border);
-            border-radius: var(--border-radius);
-            font-size: 0.95rem;
-            transition: all var(--transition-speed) ease;
-            width: 100%;
-            background: var(--input-bg);
-            color: var(--text-color);
-        }
-
-        input:hover {
-            border-color: #ccc;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(85, 99, 222, 0.1);
-        }
-
-        .input-group {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-group input {
-            padding-left: 2rem;
-        }
-
-        .input-group.suffix input {
-            padding-right: 3.5rem;
-            padding-left: 0.75rem;
-        }
-
-        .input-prefix,
-        .input-suffix {
-            position: absolute;
-            color: #bdc3c7;
-            font-size: 0.9rem;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .input-prefix {
-            left: 0.75rem;
-        }
-
-        .input-suffix {
-            right: 0.75rem;
-            max-width: 3rem;
-            text-align: right;
-        }
-
-        button[type="submit"] {
-            grid-column: 1 / -1;
-            height: var(--input-height);
-            border: none;
-            border-radius: var(--border-radius);
-            background: var(--primary-color);
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        button[type="submit"]:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
-        }
-
-        button[type="submit"]:active {
-            transform: translateY(0);
-        }
-
-        /* ================== Resultados e Gráficos ================== */
-        .result-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            padding-top: 1rem;
-        }
-
-        .results-grid {
-            display: grid;
-            gap: 1.5rem;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        }
-
-        .result-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-            padding: 1.5rem;
-            display: grid;
-            gap: 1.5rem;
-            transition: all var(--transition-speed) ease;
-            border: 1px solid var(--input-border);
-            min-width: 0;
-            overflow: hidden;
-        }
-
-        /* ================== Histórico de Cálculos Recentes ================== */
-        .calc-history-wrapper {
-            margin-bottom: 1rem;
-        }
-
-        .calc-history-wrapper h2 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
-
-        .calc-history-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .history-card {
-            background: var(--card-bg);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            border-radius: var(--border-radius);
-            padding: 0.75rem;
-            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .history-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Novos estilos para os detalhes do card */
-        .history-header {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-            text-align: center;
-            border-bottom: 1px solid var(--input-border);
-            padding-bottom: 0.3rem;
-        }
-
-        .history-body {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .history-item {
-            background: var(--inputs-bg);
-            border-radius: var(--border-radius);
-            padding: 0.5rem 0.75rem;
-            flex: 1 1 calc(50% - 0.5rem);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .history-label {
-            font-size: 0.75rem;
-            color: #bdc3c7;
-            margin-bottom: 0.25rem;
-            text-transform: uppercase;
-        }
-
-        .history-value {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        @media (max-width: 480px) {
-            .calc-history-container {
-                grid-template-columns: 1fr;
-            }
-
-            .history-body {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.3rem;
-            }
-
-            .history-item {
-                padding: 0.3rem 0.4rem;
-            }
-
-            .history-header {
-                font-size: 0.8rem;
-            }
-
-            .history-label {
-                font-size: 0.7rem;
-            }
-
-            .history-value {
-                font-size: 0.8rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora de ROI</title>
+  <!-- Fonte Roboto (já era utilizada, mantivemos para consistência) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /*************************************************
+      VARIÁVEIS DE COR E ESTILO PRINCIPAIS (DARK MODE)
+    *************************************************/
+    :root {
+      --primary-color: #BB86FC;
+      --primary-hover: #9B68E1;
+      --background-start: #131313;
+      --background-end: #1A1A1A;
+      --sidebar-bg: #1A1A1A;
+      --container-bg: #1E1E1E;
+      --inputs-bg: #242424;
+      --card-bg: #1E1E1E;
+      --input-bg: #2C2C2C;
+      --input-border: #3A3A3A;
+      --text-color: #E0E0E0;
+      --border-radius: 8px;
+      --transition-speed: 0.3s;
+      --input-height: 2.75rem;
+      --form-gap: 1rem;
+      --shadow-color: rgba(0,0,0,0.5);
+      --box-shadow: 0 8px 24px var(--shadow-color);
+    }
+
+    /*************************************************
+      RESET E CONFIGURAÇÕES GERAIS
+    *************************************************/
+    * {
+      box-sizing: border-box;
+      margin: 0; 
+    }
+
+    body {
+      font-family: "Roboto", sans-serif;
+      background: linear-gradient(135deg, var(--background-start), var(--background-end));
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    a:hover {
+      opacity: 0.8;
+    }
+
+    /*************************************************
+      HEADER (TOPO)
+    *************************************************/
+    .header {
+      width: 100%;
+      background-color: var(--sidebar-bg);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+    }
+    .header .logo {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    /*************************************************
+      LAYOUT PRINCIPAL
+    *************************************************/
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /*************************************************
+      ASIDE (BARRA LATERAL -> HISTÓRICO)
+    *************************************************/
+    aside.sidebar {
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--input-border);
+      overflow-y: auto;
+      padding: 1rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+    aside.sidebar h2 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      text-align: center;
+      color: var(--primary-color);
+    }
+    aside.sidebar p {
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /*************************************************
+      CONTAINER PRINCIPAL (MAIN)
+    *************************************************/
+    main {
+      padding: 1rem;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    /*************************************************
+      ANIMAÇÃO fadeIn
+    *************************************************/
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /*************************************************
+      SEÇÃO DE FORMULÁRIO E RESULTADOS
+    *************************************************/
+    .container {
+      background: var(--container-bg);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0;
+      font-size: 1.8rem;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    /*************************************************
+      FORMULÁRIO (INPUTS)
+    *************************************************/
+    .inputs-section {
+      background: var(--inputs-bg);
+      padding: 1.25rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--input-border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    form {
+      display: grid;
+      gap: var(--form-gap);
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 500;
+      color: #bdc3c7;
+      font-size: 0.9rem;
+    }
+
+    input {
+      height: var(--input-height);
+      padding: 0 0.75rem;
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      font-size: 0.95rem;
+      transition: all var(--transition-speed) ease;
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+    input:hover {
+      border-color: #ccc;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(85, 99, 222, 0.1);
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-group input {
+      padding-left: 2rem;
+    }
+    .input-group.suffix input {
+      padding-right: 3.5rem;
+      padding-left: 0.75rem;
+    }
+    .input-prefix,
+    .input-suffix {
+      position: absolute;
+      color: #bdc3c7;
+      font-size: 0.9rem;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .input-prefix {
+      left: 0.75rem;
+    }
+    .input-suffix {
+      right: 0.75rem;
+      max-width: 3rem;
+      text-align: right;
+    }
+
+    button[type="submit"],
+    .cpa-add-btn {
+      height: var(--input-height);
+      border: none;
+      border-radius: var(--border-radius);
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button[type="submit"]:hover,
+    .cpa-add-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
+    }
+    button[type="submit"]:active,
+    .cpa-add-btn:active {
+      transform: translateY(0);
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    /*************************************************
+      ÁREA DE CPAs (TAGS)
+    *************************************************/
+    .cpa-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      grid-column: 1 / -1;
+    }
+    .cpa-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    .cpa-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      min-height: calc(var(--input-height) * 1.2);
+      padding: 0.25rem;
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      align-items: flex-start;
+      justify-content: center;
+      transition: background var(--transition-speed);
+    }
+    .cpa-tags:hover {
+      background: #2f2f2f;
+    }
+
+    .cpa-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.1rem;
+      padding: 0.1rem 0.25rem;
+      background: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      border-radius: 2px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #444343;
+      transition: all var(--transition-speed) ease;
+      animation: tagAppear 0.3s ease-out;
+    }
+    .cpa-tag:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 1px 2px rgba(85, 99, 222, 0.15);
+    }
+    @keyframes tagAppear {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .cpa-tag-remove {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      padding: 0;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: currentColor;
+      cursor: pointer;
+      font-size: 0.7rem;
+      line-height: 1;
+      border-radius: 2px;
+      transition: all var(--transition-speed) ease;
+    }
+    .cpa-tag:hover .cpa-tag-remove {
+      background: rgba(0,0,0,0.1);
+    }
+    .cpa-tag-remove:hover {
+      background: rgba(220,53,69,0.2) !important;
+      color: #dc3545;
+      transform: scale(1.1);
+    }
+
+    /*************************************************
+      SEÇÃO RESULTADOS
+    *************************************************/
+    .result-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .results-grid {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+
+    .result-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px var(--shadow-color);
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.5rem;
+      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+      border: 1px solid var(--input-border);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .result-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border: 2px solid var(--primary-color);
+      margin-bottom: 1rem;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .result-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      min-width: 0;
+    }
+
+    .result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #242424;
+      border-radius: var(--border-radius);
+      padding: 0.75rem;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .result-label {
+      font-size: 0.8rem;
+      color: #999;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-value {
+      font-size: 1.25rem;
+      font-weight: 500;
+      min-width: 0;
+      white-space: nowrap;
+      transform-origin: left center;
+      width: fit-content;
+      margin-right: auto;
+    }
+    .result-value.highlight {
+      font-size: 1.4rem;
+    }
+
+    .result-item.highlight {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid transparent;
+    }
+    .result-item.highlight.positive {
+      border-color: rgba(40,167,69,0.4);
+    }
+    .result-item.highlight.negative {
+      border-color: rgba(220,53,69,0.4);
+    }
+    .result-value.positive {
+      color: #28a745;
+    }
+    .result-value.negative {
+      color: #dc3545;
+    }
+
+    /*************************************************
+      ÁREA DE CPA/CAC
+    *************************************************/
+    .result-cpa {
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--primary-color);
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      min-width: 0;
+      word-break: break-word;
+      line-height: 1;
+    }
+    .result-cpa::after {
+      content: 'CPA';
+      font-size: 0.9rem;
+      color: #666;
+      font-weight: normal;
+      white-space: nowrap;
+    }
+    .result-cac {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+    .result-cac-label {
+      font-size: 0.85rem;
+      color: #666;
+      white-space: nowrap;
+    }
+    .result-cac-value {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-color);
+      word-break: break-word;
+    }
+
+    .cpa-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      align-items: center;
+    }
+    .summary-cpa-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.25rem;
+      background: rgb(31, 30, 30);
+      border: 1px solid var(--primary-color);
+      border-radius: 2px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--primary-color);
+    }
+
+    /*************************************************
+      DETALHES DE VENDAS
+    *************************************************/
+    .sales-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sales-total {
+      font-size: 1em;
+    }
+    .sales-breakdown {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.65em;
+      color: rgba(224,224,224,0.7);
+      gap: 2px;
+      border-left: 1px solid rgba(224,224,224,0.2);
+      padding-left: 12px;
+      line-height: 1.2;
+    }
+    .sophisticated {
+      font-style: italic;
+      opacity: 0.85;
+    }
+
+    /*************************************************
+      SEÇÃO DE HISTÓRICO (EXIBIDO NO ASIDE)
+    *************************************************/
+    #calcHistoryWrapper {
+      margin-bottom: 2rem;
+    }
+    #calcHistoryContainer {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .history-card {
+      background: var(--card-bg);
+      box-shadow: 0 2px 4px var(--shadow-color);
+      border-radius: var(--border-radius);
+      padding: 0.75rem;
+      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .history-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+    .history-header {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--input-border);
+      padding-bottom: 0.3rem;
+    }
+    .history-body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .history-item {
+      background: var(--inputs-bg);
+      border-radius: var(--border-radius);
+      padding: 0.5rem 0.75rem;
+      flex: 1 1 calc(50% - 0.5rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .history-label {
+      font-size: 0.75rem;
+      color: #bdc3c7;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+    .history-value {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+    @media (max-width: 480px) {
+      .history-body {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.3rem;
+      }
+      .history-item {
+        padding: 0.3rem 0.4rem;
+      }
+    }
+
+    /*************************************************
+      ÁREA DO GRÁFICO
+    *************************************************/
+    .chart-container {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      margin-top: 2rem;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      border: 1px solid var(--input-border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: 450px !important;
+      min-width: 300px;
+    }
+    @media (max-width: 768px) {
+      .chart-container {
+        padding: 1rem;
+        margin-top: 1.5rem;
+      }
+      .chart-container canvas {
+        height: 350px !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .chart-container {
+        padding: 0.75rem;
+        margin-top: 1rem;
+      }
+      .chart-container canvas {
+        height: 300px !important;
+      }
+    }
+
+    /*************************************************
+      LOADING (efeito ao clicar em "Calcular")
+    *************************************************/
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .loading button {
+      position: relative;
+    }
+    .loading button::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    @keyframes spin {
+      to {
+        transform: translateY(-50%) rotate(360deg);
+      }
+    }
+
+    /*************************************************
+      MEDIA QUERIES PARA O FORMULÁRIO/RESULTADOS
+    *************************************************/
+    @media (max-width: 1024px) {
+      .results-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      .result-card {
+        padding: 1.25rem;
+        gap: 1.25rem;
+      }
+      .result-grid {
+        gap: 0.85rem;
+      }
+      .result-item {
+        padding: 0.65rem;
+      }
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        gap: 1.5rem;
+      }
+      .inputs-section {
+        padding: 1rem;
+      }
+      .result-card {
+        padding: 1rem;
+        gap: 1rem;
+      }
+      .result-header {
+        padding-bottom: 0.85rem;
+      }
+      .result-grid {
+        gap: 0.75rem;
+      }
+      .result-item {
+        padding: 0.6rem;
+        gap: 0.3rem;
+      }
+      .result-cpa {
+        font-size: 1.75rem;
+      }
+      .result-cac-value {
+        font-size: 1.15rem;
+      }
+      .result-value {
+        font-size: 1.15rem;
+      }
+      .result-value.highlight {
+        font-size: 1.35rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 0.75rem;
+      }
+      h1 {
+        font-size: 1.35rem;
+      }
+      .results-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      .result-card {
+        padding: 0.85rem;
+        gap: 0.85rem;
+      }
+      .result-header {
+        padding-bottom: 0.75rem;
+      }
+      .result-cpa {
+        font-size: 1.5rem;
+      }
+      .result-cac-value {
+        font-size: 1rem;
+      }
+      .result-value {
+        font-size: 1rem;
+      }
+      .result-value.highlight {
+        font-size: 1.15rem;
+      }
+      .result-label {
+        font-size: 0.75rem;
+      }
+    }
+    @media (max-width: 360px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+      label {
+        font-size: 0.8rem;
+      }
+      input {
+        font-size: 0.85rem;
+        height: 2.5rem;
+      }
+      .result-cpa {
+        font-size: 1.35rem;
+      }
+      .result-cac-value {
+        font-size: 0.95rem;
+      }
+      .result-value {
+        font-size: 0.95rem;
+      }
+      .result-value.highlight {
+        font-size: 1.1rem;
+      }
+      .result-label {
+        font-size: 0.7rem;
+      }
+    }
+
+    /*************************************************
+      Estilos para o menu hamburger
+    *************************************************/
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .menu-toggle:hover {
+      color: var(--primary-color);
+    }
+
+    @media (max-width: 900px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -300px;
+        height: 100vh;
+        width: 300px;
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+        padding-top: 60px;
+      }
+
+      .sidebar.active {
+        transform: translateX(300px);
+      }
+
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+
+      .overlay.active {
+        display: block;
+      }
+    }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <!-- Área dos últimos cálculos -->
-        <section id="calcHistoryWrapper" class="calc-history-wrapper">
-            <h2>Últimos cálculos</h2>
-            <div id="calcHistoryContainer" class="calc-history-container">
-                <!-- Os cards serão renderizados via JavaScript -->
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo"> ROI Calculator</div>
+    <button class="menu-toggle" aria-label="Toggle menu">☰</button>
+  </header>
+
+  <!-- Overlay para fechar o menu ao clicar fora -->
+  <div class="overlay"></div>
+
+  <!-- LAYOUT GERAL -->
+  <div class="layout">
+    <!-- ASIDE (Histórico) -->
+    <aside class="sidebar">
+      <section id="calcHistoryWrapper">
+        <h2>Últimos cálculos</h2>
+        <div id="calcHistoryContainer">
+          <!-- Histórico renderizado via JS -->
+        </div>
+      </section>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+      <div class="container">
+        <h1>Calculadora de ROI</h1>
+        
+        <!-- Formulário -->
+        <section class="inputs-section">
+          <form id="calcForm" autocomplete="off">
+            <div class="form-group">
+              <label for="gastos">Gastos com Tráfego</label>
+              <div class="input-group">
+                <span class="input-prefix">R$</span>
+                <input type="text" id="gastos" name="gastos" value="" required placeholder="0" inputmode="numeric"/>
+                <span class="input-suffix">/dia</span>
+              </div>
             </div>
+
+            <div class="form-group">
+              <label for="dias">Dias de Tráfego</label>
+              <div class="input-group suffix">
+                <input type="text" id="dias" name="dias" value="" required placeholder="1" maxlength="3" inputmode="numeric"/>
+                <span class="input-suffix">dias</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="ticket">Ticket do Produto</label>
+              <div class="input-group">
+                <span class="input-prefix">R$</span>
+                <input type="text" id="ticket" name="ticket" value="" required placeholder="0,00" inputmode="numeric"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="taxas">Taxas Descontadas</label>
+              <div class="input-group suffix">
+                <input type="text" id="taxas" name="taxas" value="" required placeholder="0" inputmode="numeric"/>
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="valorDescontado">Valor Descontado</label>
+              <div class="input-group">
+                <span class="input-prefix">R$</span>
+                <input type="text" id="valorDescontado" name="valorDescontado" value="" required placeholder="0,00" inputmode="numeric"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="cpaInput">CPAs (%)</label>
+              <div class="cpa-input-container">
+                <div class="cpa-input-wrapper">
+                  <div class="input-group suffix">
+                    <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric"/>
+                    <span class="input-suffix">%</span>
+                  </div>
+                  <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
+                </div>
+                <div class="cpa-tags" id="cpaTags"></div>
+                <input type="hidden" id="cpa" name="cpa" required/>
+              </div>
+            </div>
+
+            <button type="submit" class="full-width">Calcular ROI</button>
+          </form>
         </section>
 
-        <main>
-            <h1>Calculadora de ROI</h1>
-            <section class="inputs-section">
-                <form id="calcForm" autocomplete="off">
-                    <div class="form-group">
-                        <label for="gastos">Gastos com Tráfego</label>
-                        <div class="input-group">
-                            <span class="input-prefix">R$</span>
-                            <input type="text" id="gastos" name="gastos" value="" required placeholder="0"
-                                inputmode="numeric" />
-                            <span class="input-suffix">/dia</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="dias">Dias de Tráfego</label>
-                        <div class="input-group suffix">
-                            <input type="text" id="dias" name="dias" value="" required placeholder="1" maxlength="3"
-                                inputmode="numeric" />
-                            <span class="input-suffix">dias</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="ticket">Ticket do Produto</label>
-                        <div class="input-group">
-                            <span class="input-prefix">R$</span>
-                            <input type="text" id="ticket" name="ticket" value="" required placeholder="0,00"
-                                inputmode="numeric" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="taxas">Taxas Descontadas</label>
-                        <div class="input-group suffix">
-                            <input type="text" id="taxas" name="taxas" value="" required placeholder="0"
-                                inputmode="numeric" />
-                            <span class="input-suffix">%</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="valorDescontado">Valor Descontado</label>
-                        <div class="input-group">
-                            <span class="input-prefix">R$</span>
-                            <input type="text" id="valorDescontado" name="valorDescontado" value="" required
-                                placeholder="0,00" inputmode="numeric" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="cpaInput">CPAs (%)</label>
-                        <div class="cpa-input-container">
-                            <div class="cpa-input-wrapper">
-                                <div class="input-group suffix">
-                                    <input type="text" id="cpaInput" placeholder="0" maxlength="2"
-                                        inputmode="numeric" />
-                                    <span class="input-suffix">%</span>
-                                </div>
-                                <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
-                            </div>
-                            <div class="cpa-tags" id="cpaTags"></div>
-                            <input type="hidden" id="cpa" name="cpa" required />
-                        </div>
-                    </div>
-                    <button type="submit" class="full-width">Calcular ROI</button>
-                </form>
-            </section>
-            <section class="result-container" id="result"></section>
-        </main>
-    </div>
+        <!-- Área de Resultados -->
+        <section class="result-container" id="result"></section>
+      </div>
+    </main>
+  </div>
 
-    <script>
-        // --------- Utility functions ----------
-        function round(value, decimals) {
-            return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+  <!-- SCRIPT PRINCIPAL (Mesmo JS, com ajustes mínimos) -->
+  <script>
+    // --------- Utility functions ----------
+    function round(value, decimals) {
+      return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+    }
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(value);
+    }
+    function formatNumber(value, decimals = 2) {
+      return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }).format(value);
+    }
+    function formatCompactNumber(value) {
+      const absValue = Math.abs(value);
+      if (absValue >= 1_000_000) {
+        return (value / 1_000_000).toFixed(1) + 'M';
+      } else if (absValue >= 1000) {
+        return (value / 1000).toFixed(1) + 'K';
+      }
+      return String(Math.floor(value));
+    }
+    function formatMoneyInput(value, showDecimals = true) {
+      value = value.replace(/\D/g, '');
+      if (!value) return '0';
+      if (showDecimals) {
+        value = (parseInt(value) / 100).toFixed(2);
+      } else {
+        value = parseInt(value);
+      }
+      value = new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: showDecimals ? 2 : 0,
+        maximumFractionDigits: showDecimals ? 2 : 0,
+      }).format(value);
+      return value;
+    }
+
+    // --------- FORMATAÇÃO CAMPOS - GASTOS, TICKET, VALOR DESCONTADO ----------
+    ['gastos', 'ticket', 'valorDescontado'].forEach(id => {
+      const input = document.getElementById(id);
+      const showDecimals = (id !== 'gastos'); 
+      input.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (showDecimals && value.length > 10) {
+          value = value.slice(0, 10);
+        } else if (!showDecimals && value.length > 8) {
+          value = value.slice(0, 8);
         }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            }).format(value);
+        if (showDecimals && value.length <= 2) {
+          value = value.padStart(3, '0');
         }
-
-        function formatNumber(value, decimals = 2) {
-            return new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: decimals,
-                maximumFractionDigits: decimals
-            }).format(value);
+        e.target.dataset.value = value;
+        e.target.value = formatMoneyInput(value, showDecimals);
+      });
+      input.addEventListener('blur', function (e) {
+        if (!e.target.value.trim()) {
+          e.target.value = '0';
+          e.target.dataset.value = '0';
+        } else {
+          const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
+          e.target.value = formatMoneyInput(value, showDecimals);
         }
+      });
+    });
 
-        // Compact number for large integers (e.g., Qtd. Vendas)
-        function formatCompactNumber(value) {
-            const absValue = Math.abs(value);
-            if (absValue >= 1_000_000) {
-                return (value / 1_000_000).toFixed(1) + 'M';
-            } else if (absValue >= 1000) {
-                return (value / 1000).toFixed(1) + 'K';
-            }
-            return String(Math.floor(value));
-        }
+    // --------- DIAS INPUT (limite 3 dígitos) ----------
+    const diasInput = document.getElementById('dias');
+    diasInput.addEventListener('input', function (e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 3) {
+        value = value.slice(0, 3);
+      }
+      e.target.value = value;
+    });
 
-        // --------- Money formatting for inputs ----------
-        function formatMoneyInput(value, showDecimals = true) {
-            // Remove tudo que não é número
-            value = value.replace(/\D/g, '');
-            // Se o valor estiver vazio, retorna '0'
-            if (!value) return '0';
+    // --------- TAXAS INPUT (porcentagem c/ 2 decimais) ----------
+    const taxasInput = document.getElementById('taxas');
+    taxasInput.addEventListener('input', function (e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 5) {
+        value = value.slice(0, 5);
+      }
+      if (value.length <= 2) {
+        value = value.padStart(3, '0');
+      }
+      e.target.dataset.value = value;
+      let numericValue = parseFloat(value) / 100;
+      if (numericValue > 100) {
+        numericValue = 100;
+        e.target.dataset.value = '10000';
+      }
+      e.target.value = new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(numericValue);
+    });
+    taxasInput.addEventListener('blur', function (e) {
+      if (!e.target.value.trim()) {
+        e.target.value = '0,00';
+        e.target.dataset.value = '0';
+      } else {
+        const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
+        const numericValue = parseFloat(value) / 100;
+        e.target.value = new Intl.NumberFormat('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(numericValue);
+      }
+    });
 
-            if (showDecimals) {
-                value = (parseInt(value) / 100).toFixed(2);
-            } else {
-                value = parseInt(value);
-            }
-            // Converte para formato brasileiro
-            value = new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: showDecimals ? 2 : 0,
-                maximumFractionDigits: showDecimals ? 2 : 0,
-            }).format(value);
-            return value;
-        }
+    // --------- CPA INPUT (limite 2 dígitos) ----------
+    const cpaInput = document.getElementById('cpaInput');
+    cpaInput.addEventListener('input', function (e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 2) {
+        value = value.slice(0, 2);
+      }
+      e.target.value = value;
+    });
 
-        // Prepare certain inputs for real-time formatting
-        ['gastos', 'ticket', 'valorDescontado'].forEach(id => {
-            const input = document.getElementById(id);
-            const showDecimals = (id !== 'gastos'); // 'gastos' as integer only in this demo
+    // --------- MULTIPLOS CPAs (TAGS) ----------
+    function setupCPAInput() {
+      const input = document.getElementById('cpaInput');
+      const addBtn = document.getElementById('cpaAdd');
+      const tagsContainer = document.getElementById('cpaTags');
+      const hiddenInput = document.getElementById('cpa');
+      let cpaValues = [30, 40, 50, 60]; // valores iniciais
 
-            input.addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length > (showDecimals ? 10 : 8)) {
-                    value = value.slice(0, showDecimals ? 10 : 8);
-                }
-                if (showDecimals && value.length <= 2) {
-                    value = value.padStart(3, '0');
-                }
-                e.target.dataset.value = value;
-                e.target.value = formatMoneyInput(value, showDecimals);
-            });
-
-            input.addEventListener('blur', function (e) {
-                if (!e.target.value.trim()) {
-                    e.target.value = '0';
-                    e.target.dataset.value = '0';
-                } else {
-                    const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
-                    e.target.value = formatMoneyInput(value, showDecimals);
-                }
-            });
-        });
-
-        // --------- Dias input (limit to 3 digits) ----------
-        const diasInput = document.getElementById('dias');
-        diasInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 3) {
-                value = value.slice(0, 3);
-            }
-            e.target.value = value;
-        });
-
-        // --------- Taxas input (percentage with 2 decimals) ----------
-        const taxasInput = document.getElementById('taxas');
-        taxasInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 5) {
-                value = value.slice(0, 5);
-            }
-            if (value.length <= 2) {
-                value = value.padStart(3, '0');
-            }
-            e.target.dataset.value = value;
-            let numericValue = parseFloat(value) / 100;
-            if (numericValue > 100) {
-                numericValue = 100;
-                e.target.dataset.value = '10000';
-            }
-            e.target.value = new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(numericValue);
-        });
-
-        taxasInput.addEventListener('blur', function (e) {
-            if (!e.target.value.trim()) {
-                e.target.value = '0,00';
-                e.target.dataset.value = '0';
-            } else {
-                const value = e.target.dataset.value || e.target.value.replace(/\D/g, '');
-                const numericValue = parseFloat(value) / 100;
-                e.target.value = new Intl.NumberFormat('pt-BR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }).format(numericValue);
-            }
-        });
-
-        // --------- CPA input (limit to 2 digits) ----------
-        const cpaInput = document.getElementById('cpaInput');
-        cpaInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 2) {
-                value = value.slice(0, 2);
-            }
-            e.target.value = value;
-        });
-
-        // --------- Setup multiple CPAs with tags ----------
-        function setupCPAInput() {
-            const input = document.getElementById('cpaInput');
-            const addBtn = document.getElementById('cpaAdd');
-            const tagsContainer = document.getElementById('cpaTags');
-            const hiddenInput = document.getElementById('cpa');
-
-            // You can customize these initial CPA values
-            let cpaValues = [30, 40, 50, 60];
-
-            function updateHiddenInput() {
-                hiddenInput.value = cpaValues.join('\n');
-            }
-            function addTag(value) {
-                const tag = document.createElement('div');
-                tag.className = 'cpa-tag';
-                tag.innerHTML = `
-        ${Math.round(value)}%
-        <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
-      `;
-                tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
-                    tag.style.transform = 'scale(0.8)';
-                    tag.style.opacity = '0';
-                    setTimeout(() => {
-                        cpaValues = cpaValues.filter(v => v !== value);
-                        tag.remove();
-                        updateHiddenInput();
-                    }, 200);
-                });
-                tagsContainer.appendChild(tag);
-            }
-
-            function addCPA(value) {
-                const numValue = parseFloat(value);
-                if (!isNaN(numValue) && numValue > 0 && numValue <= 100) {
-                    if (!cpaValues.includes(numValue)) {
-                        cpaValues.push(numValue);
-                        cpaValues.sort((a, b) => a - b);
-                        tagsContainer.innerHTML = '';
-                        cpaValues.forEach(val => addTag(val));
-                        updateHiddenInput();
-                    }
-                    input.value = '';
-                }
-            }
-
-            // Init the tags
-            cpaValues.forEach(val => addTag(val));
-            updateHiddenInput();
-
-            addBtn.addEventListener('click', () => addCPA(input.value));
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCPA(input.value);
-                }
-            });
-        }
-        setupCPAInput();
-
-        // --------- localStorage: save/load form values ----------
-        function saveFormValues() {
-            const formValues = {
-                gastos: document.getElementById("gastos").value,
-                dias: document.getElementById("dias").value,
-                ticket: document.getElementById("ticket").value,
-                taxas: document.getElementById("taxas").value,
-                valorDescontado: document.getElementById("valorDescontado").value,
-                cpaValues: document.getElementById("cpa").value
-            };
-            localStorage.setItem('roiCalculatorValues', JSON.stringify(formValues));
-        }
-
-        function loadFormValues() {
-            const savedValues = localStorage.getItem('roiCalculatorValues');
-            if (savedValues) {
-                const formValues = JSON.parse(savedValues);
-                document.getElementById("gastos").value = formValues.gastos;
-                document.getElementById("dias").value = formValues.dias;
-                document.getElementById("ticket").value = formValues.ticket;
-                document.getElementById("taxas").value = formValues.taxas;
-                document.getElementById("valorDescontado").value = formValues.valorDescontado;
-
-                const cpaTags = document.getElementById("cpaTags");
-                cpaTags.innerHTML = '';
-
-                const cpaList = formValues.cpaValues
-                    .split(/\r?\n/)
-                    .map(item => item.trim())
-                    .filter(item => item !== "")
-                    .map(item => parseFloat(item))
-                    .sort((a, b) => a - b);
-
-                document.getElementById("cpa").value = formValues.cpaValues;
-
-                cpaList.forEach(value => {
-                    const tag = document.createElement('div');
-                    tag.className = 'cpa-tag';
-                    tag.innerHTML = `
+      function updateHiddenInput() {
+        hiddenInput.value = cpaValues.join('\n');
+      }
+      function addTag(value) {
+        const tag = document.createElement('div');
+        tag.className = 'cpa-tag';
+        tag.innerHTML = `
           ${Math.round(value)}%
           <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
         `;
-                    tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
-                        tag.style.transform = 'scale(0.8)';
-                        tag.style.opacity = '0';
-                        setTimeout(() => {
-                            const currentCPAs = document.getElementById("cpa").value
-                                .split(/\r?\n/)
-                                .map(item => parseFloat(item.trim()))
-                                .filter(v => v !== value)
-                                .join('\n');
-                            document.getElementById("cpa").value = currentCPAs;
-                            tag.remove();
-                        }, 200);
-                    });
-                    cpaTags.appendChild(tag);
-                });
-            }
+        tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
+          tag.style.transform = 'scale(0.8)';
+          tag.style.opacity = '0';
+          setTimeout(() => {
+            cpaValues = cpaValues.filter(v => v !== value);
+            tag.remove();
+            updateHiddenInput();
+          }, 200);
+        });
+        tagsContainer.appendChild(tag);
+      }
+      function addCPA(value) {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue) && numValue > 0 && numValue <= 100) {
+          if (!cpaValues.includes(numValue)) {
+            cpaValues.push(numValue);
+            cpaValues.sort((a, b) => a - b);
+            tagsContainer.innerHTML = '';
+            cpaValues.forEach(val => addTag(val));
+            updateHiddenInput();
+          }
+          input.value = '';
         }
-        document.addEventListener('DOMContentLoaded', loadFormValues);
+      }
+      cpaValues.forEach(val => addTag(val));
+      updateHiddenInput();
 
-        // --------- Funções para gerenciar o histórico dos cálculos -------------------
-        function loadHistory() {
-            const histStr = localStorage.getItem('roiCalcHistory');
-            return histStr ? JSON.parse(histStr) : [];
+      addBtn.addEventListener('click', () => addCPA(input.value));
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addCPA(input.value);
         }
-        function saveHistory(historyArray) {
-            localStorage.setItem('roiCalcHistory', JSON.stringify(historyArray));
-        }
-        function addHistoryEntry(entry) {
-            let history = loadHistory();
-            history.unshift(entry);
-            if (history.length > 2) {
-                history = history.slice(0, 2);
-            }
-            saveHistory(history);
-            renderHistory();
-        }
-        function renderHistory() {
-            const history = loadHistory();
-            const container = document.getElementById('calcHistoryContainer');
-            container.innerHTML = '';
-            if (history.length === 0) {
-                container.innerHTML = '<p>Nenhum cálculo recente.</p>';
-                return;
-            }
-            history.forEach(entry => {
-                const card = document.createElement('div');
-                card.className = 'history-card';
-                const dateStr = new Date(entry.timestamp).toLocaleString('pt-BR');
-                const cpaSummary = entry.formValues.cpaValues.split(/\r?\n/).join(', ');
-                card.innerHTML = `
-              <div class="history-header">
-                  ${dateStr}
-              </div>
-              <div class="history-body">
-                  <div class="history-item">
-                      <span class="history-label">Gastos</span>
-                      <span class="history-value">R$ ${entry.formValues.gastos} / ${entry.formValues.dias} dias</span>
-                  </div>
-                  <div class="history-item">
-                      <span class="history-label">Ticket</span>
-                      <span class="history-value">R$ ${entry.formValues.ticket}</span>
-                  </div>
-                  <div class="history-item">
-                      <span class="history-label">Taxas</span>
-                      <span class="history-value">${entry.formValues.taxas}% + R$ ${entry.formValues.valorDescontado}</span>
-                  </div>
-                  <div class="history-item">
-                      <span class="history-label">CPAs</span>
-                      <span class="history-value">${cpaSummary}</span>
-                  </div>
-              </div>
+      });
+    }
+    setupCPAInput();
+
+    // --------- LOCALSTORAGE: SALVAR/CARREGAR VALORES DO FORM ----------
+    function saveFormValues() {
+      const formValues = {
+        gastos: document.getElementById("gastos").value,
+        dias: document.getElementById("dias").value,
+        ticket: document.getElementById("ticket").value,
+        taxas: document.getElementById("taxas").value,
+        valorDescontado: document.getElementById("valorDescontado").value,
+        cpaValues: document.getElementById("cpa").value
+      };
+      localStorage.setItem('roiCalculatorValues', JSON.stringify(formValues));
+    }
+    function loadFormValues() {
+      const savedValues = localStorage.getItem('roiCalculatorValues');
+      if (savedValues) {
+        const formValues = JSON.parse(savedValues);
+        document.getElementById("gastos").value = formValues.gastos;
+        document.getElementById("dias").value = formValues.dias;
+        document.getElementById("ticket").value = formValues.ticket;
+        document.getElementById("taxas").value = formValues.taxas;
+        document.getElementById("valorDescontado").value = formValues.valorDescontado;
+        const cpaTags = document.getElementById("cpaTags");
+        cpaTags.innerHTML = '';
+        const cpaList = formValues.cpaValues
+          .split(/\r?\n/)
+          .map(item => item.trim())
+          .filter(item => item !== "")
+          .map(item => parseFloat(item))
+          .sort((a, b) => a - b);
+        document.getElementById("cpa").value = formValues.cpaValues;
+        cpaList.forEach(value => {
+          const tag = document.createElement('div');
+          tag.className = 'cpa-tag';
+          tag.innerHTML = `
+            ${Math.round(value)}%
+            <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
           `;
-                card.addEventListener('click', () => {
-                    loadCalculationFromHistory(entry);
-                });
-                container.appendChild(card);
-            });
-        }
-        function loadCalculationFromHistory(entry) {
-            localStorage.setItem('roiCalculatorValues', JSON.stringify(entry.formValues));
-            loadFormValues();
-            document.getElementById('calcForm').dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-        document.addEventListener('DOMContentLoaded', renderHistory);
-
-        // --------- Form submission / calculation ----------
-        document.getElementById("calcForm").addEventListener("submit", function (e) {
-            e.preventDefault();
-            saveFormValues();
-
-            const form = this;
-            form.classList.add('loading');
-
+          tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
+            tag.style.transform = 'scale(0.8)';
+            tag.style.opacity = '0';
             setTimeout(() => {
-                const gastos = parseFloat(document.getElementById("gastos").value.replace(/\./g, '').replace(',', '.')) || 0;
-                const dias = parseInt(document.getElementById("dias").value) || 0;
-                const ticket = parseFloat(document.getElementById("ticket").value.replace(/\./g, '').replace(',', '.')) || 0;
-                const taxas = parseFloat(document.getElementById("taxas").value.replace(/\./g, '').replace(',', '.')) || 0;
-                const valorDescontado = parseFloat(document.getElementById("valorDescontado").value.replace(/\./g, '').replace(',', '.')) || 0;
-                const cpaInput = document.getElementById("cpa").value;
+              const currentCPAs = document.getElementById("cpa").value
+                .split(/\r?\n/)
+                .map(item => parseFloat(item.trim()))
+                .filter(v => v !== value)
+                .join('\n');
+              document.getElementById("cpa").value = currentCPAs;
+              tag.remove();
+            }, 200);
+          });
+          cpaTags.appendChild(tag);
+        });
+      }
+    }
+    document.addEventListener('DOMContentLoaded', loadFormValues);
 
-                let cpaList = cpaInput
-                    .split(/\r?\n/)
-                    .map(item => item.trim())
-                    .filter(item => item !== "")
-                    .map(item => parseFloat(item))
-                    .sort((a, b) => a - b);
-
-                if (isNaN(gastos) || isNaN(dias) || isNaN(ticket) || isNaN(taxas) || isNaN(valorDescontado) || cpaList.length === 0) {
-                    alert("Por favor, preencha todos os campos com valores válidos.");
-                    form.classList.remove('loading');
-                    return;
-                }
-
-                let html = "";
-                const totalGastos = gastos * dias;
-
-                // Calcular Break-even Point
-                const custosPorVenda = ticket * (taxas / 100) + valorDescontado; // custos por venda (taxas + desconto)
-                const breakEvenPoints = cpaList.map(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    const custoPorLeadCPA = ticket * cpaDecimal; // custo de aquisição por venda
-                    const totalCustosPorVenda = custosPorVenda + custoPorLeadCPA; // total de custos por venda
-                    const margemPorVenda = ticket - totalCustosPorVenda; // margem por venda
-                    return Math.ceil(totalGastos / margemPorVenda); // vendas necessárias para break-even
-                });
-
-                // Encontrar o menor break-even point
-                const menorBreakEven = Math.min(...breakEvenPoints);
-
-                // ---- Card de Resumo Geral ----
-                html += `
-        <div class="result-card summary-card">
-          <div class="result-header">
-            <div class="result-title">Resumo Geral</div>
+    // --------- HISTÓRICO DE CÁLCULOS (LOCALSTORAGE) ----------
+    function loadHistory() {
+      const histStr = localStorage.getItem('roiCalcHistory');
+      return histStr ? JSON.parse(histStr) : [];
+    }
+    function saveHistory(historyArray) {
+      localStorage.setItem('roiCalcHistory', JSON.stringify(historyArray));
+    }
+    function addHistoryEntry(entry) {
+      let history = loadHistory();
+      history.unshift(entry);
+      // Mantemos apenas os 5 últimos
+      if (history.length > 5) {
+        history = history.slice(0, 5);
+      }
+      saveHistory(history);
+      renderHistory();
+    }
+    function renderHistory() {
+      const history = loadHistory();
+      const container = document.getElementById('calcHistoryContainer');
+      container.innerHTML = '';
+      if (history.length === 0) {
+        container.innerHTML = '<p>Nenhum cálculo recente.</p>';
+        return;
+      }
+      history.forEach(entry => {
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        const dateStr = new Date(entry.timestamp).toLocaleString('pt-BR');
+        const cpaSummary = entry.formValues.cpaValues.split(/\r?\n/).join(', ');
+        card.innerHTML = `
+          <div class="history-header">
+            ${dateStr}
           </div>
-          <div class="result-grid">
-            <div class="result-item">
-              <div class="result-label">Ticket do Produto</div>
-              <div class="result-value">${formatCurrency(ticket)}</div>
+          <div class="history-body">
+            <div class="history-item">
+              <span class="history-label">Gastos</span>
+              <span class="history-value">R$ ${entry.formValues.gastos} / ${entry.formValues.dias} dias</span>
             </div>
-            <div class="result-item">
-              <div class="result-label">Taxa por Venda</div>
-              <div class="result-value">
-                ${formatCurrency(ticket * (taxas / 100) + valorDescontado)}
-                - (${taxas}% + ${formatCurrency(valorDescontado)})
-              </div>
+            <div class="history-item">
+              <span class="history-label">Ticket</span>
+              <span class="history-value">R$ ${entry.formValues.ticket}</span>
             </div>
-            <div class="result-item">
-              <div class="result-label">Gastos com Tráfego</div>
-              <div class="result-value">
-                ${formatCurrency(gastos)} / ${dias} dia${dias > 1 ? 's' : ''}
-              </div>
+            <div class="history-item">
+              <span class="history-label">Taxas</span>
+              <span class="history-value">${entry.formValues.taxas}% + R$ ${entry.formValues.valorDescontado}</span>
             </div>
-            <div class="result-item">
-              <div class="result-label">CPAs Selecionados</div>
-              <div class="result-value cpa-summary">
-                ${cpaList.map(cpa => `<span class="summary-cpa-tag">${Math.round(cpa)}%</span>`).join('')}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="results-grid">
-      `;
-
-                // ---- Detalhes por CPA ----
-                cpaList.forEach(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    const cac = round(ticket * cpaDecimal, 2);
-                    const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-                    const faturamento = round(qtdVendas * ticket, 2);
-                    const taxasTotais = round(qtdVendas * ((ticket * (taxas / 100)) + valorDescontado), 2);
-                    const lucro = round(
-                        (ticket - (ticket * (taxas / 100)) - valorDescontado) * qtdVendas - totalGastos,
-                        2
-                    );
-
-                    html += `
-          <div class="result-card">
-            <div class="result-header">
-              <div class="result-cpa">${Math.round(cpa)}%</div>
-              <div class="result-cac">
-                <span class="result-cac-label">Custo de Aquisição</span>
-                <span class="result-cac-value">${formatCurrency(cac)}</span>
-              </div>
-            </div>
-            <div class="result-grid">
-              <div class="result-item">
-                <div class="result-label">Qtd. Vendas</div>
-                <div class="result-value sales-details">
-                  <div class="sales-total">~ ${formatCompactNumber(qtdVendas)}</div>
-                  <div class="sales-breakdown">
-                    <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias))} · dia</span>
-                    <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias/12))} · hora</span>
-                  </div>
-                </div>
-              </div>
-              <div class="result-item">
-                <div class="result-label">Break-even</div>
-                <div class="result-value sales-details">
-                  <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100)))))}</div>
-                  <div class="sales-breakdown">
-                    <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100))))/dias))} · dia</span>
-                    <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - (ticket * (taxas / 100)) - valorDescontado - (ticket * (cpa / 100))))/dias/12))} · hora</span>
-                  </div>
-                </div>
-              </div>
-              <div class="result-item">
-                <div class="result-label">Faturamento</div>
-                <div class="result-value">${formatCurrency(faturamento)}</div>
-              </div>
-              <div class="result-item">
-                <div class="result-label">Total em Taxas</div>
-                <div class="result-value">${formatCurrency(taxasTotais)}</div>
-              </div>
-              <div class="result-item">
-                <div class="result-label">Lucro Bruto</div>
-                <div class="result-value">
-                  ${formatCurrency(faturamento - taxasTotais)}
-                </div>
-              </div>
-              <div class="result-item">
-                <div class="result-label">ROI BRUTO (x)</div>
-                <div class="result-value">
-                  ${formatNumber((faturamento - taxasTotais) / totalGastos)}x
-                </div>
-              </div>
-              <div class="result-item highlight ${lucro >= 0 ? 'positive' : 'negative'}">
-                <div class="result-label">Lucro Líquido</div>
-                <div class="result-value highlight ${lucro >= 0 ? 'positive' : 'negative'}">
-                  ${formatCurrency(lucro)}
-                </div>
-              </div>
-              <div class="result-item highlight ${(faturamento - taxasTotais - gastos) / totalGastos >= 0 ? 'positive' : 'negative'}">
-                <div class="result-label">ROI LÍQUIDO (x)</div>
-                <div class="result-value highlight ${(faturamento - taxasTotais - gastos) / totalGastos >= 0 ? 'positive' : 'negative'}">
-                  ${formatNumber((faturamento - taxasTotais - gastos) / totalGastos)}x
-                </div>
-              </div>
+            <div class="history-item">
+              <span class="history-label">CPAs</span>
+              <span class="history-value">${cpaSummary}</span>
             </div>
           </div>
         `;
-                });
-
-                html += '</div>'; // close results-grid
-
-                // ---- Chart container ----
-                html += `
-        <div class="chart-container">
-          <canvas id="resultsChart"></canvas>
-        </div>
-      `;
-
-                document.getElementById("result").innerHTML = html;
-
-                // --------- Build the Chart Data ---------
-                const qtdVendasData = cpaList.map(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    return Math.floor((gastos * dias) / (ticket * cpaDecimal));
-                });
-                const lucroLiquidoData = cpaList.map(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-                    return round(
-                        (ticket - (ticket * (taxas / 100)) - valorDescontado) * qtdVendas - totalGastos,
-                        2
-                    );
-                });
-                const faturamentoData = cpaList.map(cpa => {
-                    const cpaDecimal = cpa / 100;
-                    const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-                    return round(qtdVendas * ticket, 2);
-                });
-
-                const ctx = document.getElementById('resultsChart').getContext('2d');
-
-                // We'll have 3 separate yAxes:
-                //  1. 'vendasAxis': for Qtd. Vendas (integer scale)
-                //  2. 'currencyAxis': for Lucro e Faturamento
-                //  3. 'percentAxis': for ROI (%)
-                //
-                // All are hidden by default, and we show them only if a dataset using that axis is visible.
-                //
-                // We'll handle that with a custom legend.onClick so toggling a dataset also toggles the relevant axis.
-
-                const chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: cpaList.map(cpa => `${Math.round(cpa)}%`),
-                        datasets: [
-                            {
-                                label: 'Qtd. Vendas',
-                                data: qtdVendasData,
-                                backgroundColor: 'rgba(108, 117, 125, 1)',
-                                borderWidth: 0,
-                                yAxisID: 'vendasAxis'
-                            },
-                            {
-                                label: 'Lucro Líquido',
-                                data: lucroLiquidoData,
-                                backgroundColor: 'rgba(40, 167, 69, 1)',
-                                borderWidth: 0,
-                                yAxisID: 'currencyAxis'
-                            },
-                            {
-                                label: 'Faturamento',
-                                data: faturamentoData,
-                                backgroundColor: 'rgba(85, 99, 222, 1)',
-                                borderWidth: 0,
-                                yAxisID: 'currencyAxis'
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            axis: 'x',
-                            intersect: false
-                        },
-                        scales: {
-                            x: {
-                                grid: { display: false, drawBorder: false },
-                                ticks: {
-                                    font: { size: window.innerWidth <= 768 ? 10 : 12 },
-                                    padding: window.innerWidth <= 768 ? 4 : 8,
-                                    maxRotation: 0,
-                                    minRotation: 0
-                                }
-                            },
-                            // Minimal axis for Qtd. Vendas
-                            vendasAxis: {
-                                type: 'linear',
-                                display: false,
-                                position: 'left',
-                                grid: { display: false, drawBorder: false },
-                                ticks: {
-                                    callback: (value) => formatCompactNumber(value),
-                                    font: { size: window.innerWidth <= 768 ? 10 : 12 },
-                                }
-                            },
-                            // Minimal axis for currency values
-                            currencyAxis: {
-                                type: 'linear',
-                                display: false,
-                                position: 'left',
-                                grid: { display: false, drawBorder: false },
-                                ticks: {
-                                    callback: (value) => formatCompactNumber(value),
-                                    font: { size: window.innerWidth <= 768 ? 10 : 12 },
-                                }
-                            }
-                        },
-                        plugins: {
-                            // Toggle datasets & show/hide relevant axis
-                            legend: {
-                                position: window.innerWidth <= 480 ? 'bottom' : 'top',
-                                align: 'center',
-                                labels: {
-                                    boxWidth: window.innerWidth <= 768 ? 8 : 12,
-                                    boxHeight: window.innerWidth <= 768 ? 8 : 12,
-                                    padding: window.innerWidth <= 768 ? 10 : 15,
-                                    font: { size: window.innerWidth <= 768 ? 11 : 13 }
-                                },
-                                onClick: (e, legendItem, legend) => {
-                                    const index = legendItem.datasetIndex;
-                                    const ci = legend.chart;
-                                    // Default toggle
-                                    ci.setDatasetVisibility(index, !ci.isDatasetVisible(index));
-                                    // Check which axes remain in use
-                                    const ds = ci.data.datasets;
-                                    const axesUsed = { vendasAxis: false, currencyAxis: false };
-                                    ds.forEach((d, i) => {
-                                        if (ci.isDatasetVisible(i)) {
-                                            axesUsed[d.yAxisID] = true;
-                                        }
-                                    });
-                                    Object.keys(axesUsed).forEach(axisID => {
-                                        ci.options.scales[axisID].display = axesUsed[axisID];
-                                    });
-                                    ci.update();
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#333',
-                                titleFont: { size: window.innerWidth <= 768 ? 11 : 13, weight: '600' },
-                                bodyColor: '#666',
-                                bodyFont: { size: window.innerWidth <= 768 ? 10 : 12 },
-                                borderColor: '#e0e0e0',
-                                borderWidth: 1,
-                                padding: window.innerWidth <= 768 ? 8 : 12,
-                                cornerRadius: 8,
-                                displayColors: true,
-                                boxWidth: window.innerWidth <= 768 ? 6 : 8,
-                                boxHeight: window.innerWidth <= 768 ? 6 : 8,
-                                callbacks: {
-                                    label: function (context) {
-                                        const label = context.dataset.label || '';
-                                        const value = context.parsed.y;
-                                        if (label === 'Qtd. Vendas') {
-                                            return `${label}: ${formatCompactNumber(value)}`;
-                                        }
-                                        // For currency, just show a short currency or short numeric
-                                        return `${label}: ${formatCurrency(value)}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Initially show all relevant axes
-                const initialAxesUsed = { vendasAxis: false, currencyAxis: false };
-                chart.data.datasets.forEach((d, i) => {
-                    if (chart.isDatasetVisible(i)) {
-                        initialAxesUsed[d.yAxisID] = true;
-                    }
-                });
-                Object.keys(initialAxesUsed).forEach(axisID => {
-                    chart.options.scales[axisID].display = initialAxesUsed[axisID];
-                });
-                chart.update();
-
-                form.classList.remove('loading');
-                // Adiciona o cálculo atual ao histórico (mantendo somente os 2 últimos)
-                const currentFormValues = JSON.parse(localStorage.getItem('roiCalculatorValues'));
-                addHistoryEntry({
-                    timestamp: new Date().toISOString(),
-                    formValues: currentFormValues
-                });
-            }, 300);
+        card.addEventListener('click', () => {
+          loadCalculationFromHistory(entry);
         });
+        container.appendChild(card);
+      });
+    }
+    function loadCalculationFromHistory(entry) {
+      localStorage.setItem('roiCalculatorValues', JSON.stringify(entry.formValues));
+      loadFormValues();
+      document.getElementById('calcForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+    document.addEventListener('DOMContentLoaded', renderHistory);
 
-        // --------- Adjust text scaling if it overflows ----------
-        function adjustResultValues() {
-            document.querySelectorAll('.result-value').forEach(element => {
-                const parent = element.parentElement;
-                if (!parent) return;
-                const parentWidth = parent.clientWidth - 4;
-                const elementWidth = element.scrollWidth;
-                if (elementWidth > parentWidth) {
-                    const scale = (parentWidth / elementWidth) * 0.90;
-                    element.style.transform = `scale(${scale})`;
-                    element.style.transformOrigin = 'left center';
-                } else {
-                    element.style.transform = 'none';
-                }
-            });
+    // --------- CALCULAR (SUBMISSÃO FORM) ----------
+    document.getElementById("calcForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      saveFormValues();
+      const form = this;
+      form.classList.add('loading');
+      setTimeout(() => {
+        const gastos = parseFloat(document.getElementById("gastos").value.replace(/\./g, '').replace(',', '.')) || 0;
+        const dias = parseInt(document.getElementById("dias").value) || 0;
+        const ticket = parseFloat(document.getElementById("ticket").value.replace(/\./g, '').replace(',', '.')) || 0;
+        const taxas = parseFloat(document.getElementById("taxas").value.replace(/\./g, '').replace(',', '.')) || 0;
+        const valorDescontado = parseFloat(document.getElementById("valorDescontado").value.replace(/\./g, '').replace(',', '.')) || 0;
+        const cpaInput = document.getElementById("cpa").value;
+        let cpaList = cpaInput
+          .split(/\r?\n/)
+          .map(item => item.trim())
+          .filter(item => item !== "")
+          .map(item => parseFloat(item))
+          .sort((a, b) => a - b);
+
+        if (isNaN(gastos) || isNaN(dias) || isNaN(ticket) || isNaN(taxas) || isNaN(valorDescontado) || cpaList.length === 0) {
+          alert("Por favor, preencha todos os campos com valores válidos.");
+          form.classList.remove('loading');
+          return;
         }
 
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.target.id === 'result' && mutation.addedNodes.length > 0) {
-                    setTimeout(adjustResultValues, 0);
-                }
-            });
-        });
-        observer.observe(document.getElementById('result'), { childList: true, subtree: true });
-        window.addEventListener('resize', adjustResultValues);
-        document.addEventListener('DOMContentLoaded', adjustResultValues);
-    </script>
-</body>
+        const totalGastos = gastos * dias;
+        let html = "";
 
+        // Calcular Break-even point (usado pra exibir no card)
+        const custosPorVenda = ticket * (taxas / 100) + valorDescontado;
+
+        // Card de Resumo
+        html += `
+          <div class="result-card summary-card">
+            <div class="result-header">
+              <div class="result-title">Resumo Geral</div>
+            </div>
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="result-label">Ticket do Produto</div>
+                <div class="result-value">${formatCurrency(ticket)}</div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">Taxa por Venda</div>
+                <div class="result-value">
+                  ${formatCurrency(ticket * (taxas / 100) + valorDescontado)}
+                  - (${taxas}% + ${formatCurrency(valorDescontado)})
+                </div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">Gastos com Tráfego</div>
+                <div class="result-value">
+                  ${formatCurrency(gastos)} / ${dias} dia${dias>1?'s':''}
+                </div>
+              </div>
+              <div class="result-item">
+                <div class="result-label">CPAs Selecionados</div>
+                <div class="result-value cpa-summary">
+                  ${cpaList.map(cpa => `<span class="summary-cpa-tag">${Math.round(cpa)}%</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="results-grid">
+        `;
+
+        // Detalhes para cada CPA
+        cpaList.forEach(cpa => {
+          const cpaDecimal = cpa / 100;
+          const cac = round(ticket * cpaDecimal, 2);
+          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+          const faturamento = round(qtdVendas * ticket, 2);
+          const taxasTotais = round(qtdVendas * (custosPorVenda), 2);
+          const lucro = round(
+            (ticket - custosPorVenda) * qtdVendas - totalGastos,
+            2
+          );
+          html += `
+            <div class="result-card">
+              <div class="result-header">
+                <div class="result-cpa">${Math.round(cpa)}%</div>
+                <div class="result-cac">
+                  <span class="result-cac-label">Custo de Aquisição</span>
+                  <span class="result-cac-value">${formatCurrency(cac)}</span>
+                </div>
+              </div>
+              <div class="result-grid">
+                <div class="result-item">
+                  <div class="result-label">Qtd. Vendas</div>
+                  <div class="result-value sales-details">
+                    <div class="sales-total">~ ${formatCompactNumber(qtdVendas)}</div>
+                    <div class="sales-breakdown">
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias/12))} · hora</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="result-item">
+                  <div class="result-label">Break-even</div>
+                  <div class="result-value sales-details">
+                    <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket*cpaDecimal))) )}</div>
+                    <div class="sales-breakdown">
+                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket * cpaDecimal)))/dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket * cpaDecimal)))/dias/12))} · hora</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="result-item">
+                  <div class="result-label">Faturamento</div>
+                  <div class="result-value">${formatCurrency(faturamento)}</div>
+                </div>
+                <div class="result-item">
+                  <div class="result-label">Total em Taxas</div>
+                  <div class="result-value">${formatCurrency(taxasTotais)}</div>
+                </div>
+                <div class="result-item">
+                  <div class="result-label">Lucro Bruto</div>
+                  <div class="result-value">
+                    ${formatCurrency(faturamento - taxasTotais)}
+                  </div>
+                </div>
+                <div class="result-item">
+                  <div class="result-label">ROI BRUTO (x)</div>
+                  <div class="result-value">
+                    ${formatNumber((faturamento - taxasTotais) / totalGastos)}x
+                  </div>
+                </div>
+                <div class="result-item highlight ${lucro >= 0 ? 'positive' : 'negative'}">
+                  <div class="result-label">Lucro Líquido</div>
+                  <div class="result-value highlight ${lucro >= 0 ? 'positive' : 'negative'}">
+                    ${formatCurrency(lucro)}
+                  </div>
+                </div>
+                <div class="result-item highlight ${(faturamento - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
+                  <div class="result-label">ROI LÍQUIDO (x)</div>
+                  <div class="result-value highlight ${(faturamento - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
+                    ${formatNumber((faturamento - taxasTotais - totalGastos) / totalGastos)}x
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+
+        // Container do Gráfico
+        html += `
+          <div class="chart-container">
+            <canvas id="resultsChart"></canvas>
+          </div>
+        `;
+        document.getElementById("result").innerHTML = html;
+
+        // --------- Montar dados para o Chart ----------
+        const qtdVendasData = cpaList.map(cpa => {
+          const cpaDecimal = cpa / 100;
+          return Math.floor((gastos * dias) / (ticket * cpaDecimal));
+        });
+        const lucroLiquidoData = cpaList.map(cpa => {
+          const cpaDecimal = cpa / 100;
+          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+          return round((ticket - (ticket*(taxas/100) + valorDescontado)) * qtdVendas - totalGastos, 2);
+        });
+        const faturamentoData = cpaList.map(cpa => {
+          const cpaDecimal = cpa / 100;
+          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+          return round(qtdVendas * ticket, 2);
+        });
+
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: cpaList.map(cpa => `${Math.round(cpa)}%`),
+            datasets: [
+              {
+                label: 'Qtd. Vendas',
+                data: qtdVendasData,
+                backgroundColor: 'rgba(108, 117, 125, 1)',
+                borderWidth: 0,
+                yAxisID: 'vendasAxis'
+              },
+              {
+                label: 'Lucro Líquido',
+                data: lucroLiquidoData,
+                backgroundColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 0,
+                yAxisID: 'currencyAxis'
+              },
+              {
+                label: 'Faturamento',
+                data: faturamentoData,
+                backgroundColor: 'rgba(85, 99, 222, 1)',
+                borderWidth: 0,
+                yAxisID: 'currencyAxis'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              axis: 'x',
+              intersect: false
+            },
+            scales: {
+              x: {
+                grid: { display: false, drawBorder: false },
+                ticks: {
+                  font: { size: window.innerWidth <= 768 ? 10 : 12 },
+                  padding: window.innerWidth <= 768 ? 4 : 8,
+                  maxRotation: 0,
+                  minRotation: 0
+                }
+              },
+              vendasAxis: {
+                type: 'linear',
+                display: false,
+                position: 'left',
+                grid: { display: false, drawBorder: false },
+                ticks: {
+                  callback: (value) => formatCompactNumber(value),
+                  font: { size: window.innerWidth <= 768 ? 10 : 12 },
+                }
+              },
+              currencyAxis: {
+                type: 'linear',
+                display: false,
+                position: 'left',
+                grid: { display: false, drawBorder: false },
+                ticks: {
+                  callback: (value) => formatCompactNumber(value),
+                  font: { size: window.innerWidth <= 768 ? 10 : 12 },
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: window.innerWidth <= 480 ? 'bottom' : 'top',
+                align: 'center',
+                labels: {
+                  boxWidth: window.innerWidth <= 768 ? 8 : 12,
+                  boxHeight: window.innerWidth <= 768 ? 8 : 12,
+                  padding: window.innerWidth <= 768 ? 10 : 15,
+                  font: { size: window.innerWidth <= 768 ? 11 : 13 }
+                },
+                onClick: (e, legendItem, legend) => {
+                  const index = legendItem.datasetIndex;
+                  const ci = legend.chart;
+                  ci.setDatasetVisibility(index, !ci.isDatasetVisible(index));
+                  const ds = ci.data.datasets;
+                  const axesUsed = { vendasAxis: false, currencyAxis: false };
+                  ds.forEach((d, i) => {
+                    if (ci.isDatasetVisible(i)) {
+                      axesUsed[d.yAxisID] = true;
+                    }
+                  });
+                  Object.keys(axesUsed).forEach(axisID => {
+                    ci.options.scales[axisID].display = axesUsed[axisID];
+                  });
+                  ci.update();
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                titleColor: '#333',
+                titleFont: { size: window.innerWidth <= 768 ? 11 : 13, weight: '600' },
+                bodyColor: '#666',
+                bodyFont: { size: window.innerWidth <= 768 ? 10 : 12 },
+                borderColor: '#e0e0e0',
+                borderWidth: 1,
+                padding: window.innerWidth <= 768 ? 8 : 12,
+                cornerRadius: 8,
+                displayColors: true,
+                boxWidth: window.innerWidth <= 768 ? 6 : 8,
+                boxHeight: window.innerWidth <= 768 ? 6 : 8,
+                callbacks: {
+                  label: function (context) {
+                    const label = context.dataset.label || '';
+                    const value = context.parsed.y;
+                    if (label === 'Qtd. Vendas') {
+                      return `${label}: ${formatCompactNumber(value)}`;
+                    }
+                    return `${label}: ${formatCurrency(value)}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+        const initialAxesUsed = { vendasAxis: false, currencyAxis: false };
+        chart.data.datasets.forEach((d, i) => {
+          if (chart.isDatasetVisible(i)) {
+            initialAxesUsed[d.yAxisID] = true;
+          }
+        });
+        Object.keys(initialAxesUsed).forEach(axisID => {
+          chart.options.scales[axisID].display = initialAxesUsed[axisID];
+        });
+        chart.update();
+
+        form.classList.remove('loading');
+        // Salva histórico
+        const currentFormValues = JSON.parse(localStorage.getItem('roiCalculatorValues'));
+        addHistoryEntry({
+          timestamp: new Date().toISOString(),
+          formValues: currentFormValues
+        });
+
+      }, 300);
+    });
+
+    // --------- Ajustar TAMANHO DO TEXTO se exceder container ----------
+    function adjustResultValues() {
+      document.querySelectorAll('.result-value').forEach(element => {
+        const parent = element.parentElement;
+        if (!parent) return;
+        const parentWidth = parent.clientWidth - 4;
+        const elementWidth = element.scrollWidth;
+        if (elementWidth > parentWidth) {
+          const scale = (parentWidth / elementWidth) * 0.90;
+          element.style.transform = `scale(${scale})`;
+          element.style.transformOrigin = 'left center';
+        } else {
+          element.style.transform = 'none';
+        }
+      });
+    }
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.target.id === 'result' && mutation.addedNodes.length > 0) {
+          setTimeout(adjustResultValues, 0);
+        }
+      });
+    });
+    observer.observe(document.getElementById('result'), { childList: true, subtree: true });
+    window.addEventListener('resize', adjustResultValues);
+    document.addEventListener('DOMContentLoaded', adjustResultValues);
+
+    // Adicionar código do menu hamburger no final do arquivo
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.querySelector('.menu-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.overlay');
+
+      function toggleMenu() {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      }
+
+      menuToggle.addEventListener('click', toggleMenu);
+      overlay.addEventListener('click', toggleMenu);
+    });
+  </script>
+</body>
 </html>
