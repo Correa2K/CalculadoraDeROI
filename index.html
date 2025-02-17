@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de ROI</title>
-  <!-- Fonte Roboto (já era utilizada, mantivemos para consistência) -->
+  <!-- Fonte Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -75,7 +75,7 @@
     }
 
     .header .logo {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 500;
       color: var(--primary-color);
       display: flex;
@@ -960,7 +960,7 @@
 
   <!-- HEADER -->
   <header class="header">
-    <div class="logo"> ROI Calculator</div>
+    <div class="logo">Calculadora de ROI</div>
     <button class="menu-toggle" aria-label="Toggle menu">☰</button>
   </header>
 
@@ -982,7 +982,6 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main>
       <div class="container">
-        <h1>Calculadora de ROI</h1>
 
         <!-- Formulário -->
         <section class="inputs-section">
@@ -1186,11 +1185,39 @@
       const addBtn = document.getElementById('cpaAdd');
       const tagsContainer = document.getElementById('cpaTags');
       const hiddenInput = document.getElementById('cpa');
-      let cpaValues = [30, 40, 50, 60]; // valores iniciais
+      
+      // Inicializa cpaValues do localStorage ou usa valores padrão
+      let cpaValues = [];
+      const savedValues = localStorage.getItem('roiCalculatorValues');
+      if (savedValues) {
+        const formValues = JSON.parse(savedValues);
+        if (formValues.cpaValues) {
+          cpaValues = formValues.cpaValues
+            .split(/\r?\n/)
+            .map(item => parseFloat(item.trim()))
+            .filter(item => !isNaN(item))
+            .sort((a, b) => a - b);
+        }
+      }
+      
+      // Se não houver valores salvos, usa os valores padrão
+      if (cpaValues.length === 0) {
+        cpaValues = [30, 40, 50, 60];
+      }
 
+      /**
+       * Atualiza o valor do input hidden "cpa" com os valores dos CPAs e
+       * atualiza o localStorage com os valores atuais do formulário.
+       */
       function updateHiddenInput() {
         hiddenInput.value = cpaValues.join('\n');
+        // Atualiza localStorage
+        const formValues = localStorage.getItem('roiCalculatorValues');
+        const currentValues = formValues ? JSON.parse(formValues) : {};
+        currentValues.cpaValues = hiddenInput.value;
+        localStorage.setItem('roiCalculatorValues', JSON.stringify(currentValues));
       }
+
       function addTag(value) {
         const tag = document.createElement('div');
         tag.className = 'cpa-tag';
@@ -1209,6 +1236,7 @@
         });
         tagsContainer.appendChild(tag);
       }
+
       function addCPA(value) {
         const numValue = parseFloat(value);
         if (!isNaN(numValue) && numValue > 0 && numValue <= 100) {
@@ -1218,19 +1246,24 @@
             tagsContainer.innerHTML = '';
             cpaValues.forEach(val => addTag(val));
             updateHiddenInput();
+            input.value = '';
           }
-          input.value = '';
         }
       }
+
+      // Renderiza as tags iniciais
       cpaValues.forEach(val => addTag(val));
       updateHiddenInput();
 
-      addBtn.addEventListener('click', () => addCPA(input.value));
       input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           addCPA(input.value);
         }
+      });
+
+      addBtn.addEventListener('click', () => {
+        addCPA(input.value);
       });
     }
     setupCPAInput();
