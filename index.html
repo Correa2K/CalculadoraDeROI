@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de ROI</title>
   <!-- Fonte Roboto (já era utilizada, mantivemos para consistência) -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -29,7 +30,7 @@
       --transition-speed: 0.3s;
       --input-height: 2.75rem;
       --form-gap: 1rem;
-      --shadow-color: rgba(0,0,0,0.5);
+      --shadow-color: rgba(0, 0, 0, 0.5);
       --box-shadow: 0 8px 24px var(--shadow-color);
     }
 
@@ -38,7 +39,7 @@
     *************************************************/
     * {
       box-sizing: border-box;
-      margin: 0; 
+      margin: 0;
     }
 
     body {
@@ -55,6 +56,7 @@
       color: var(--primary-color);
       text-decoration: none;
     }
+
     a:hover {
       opacity: 0.8;
     }
@@ -65,12 +67,13 @@
     .header {
       width: 100%;
       background-color: var(--sidebar-bg);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 1rem;
     }
+
     .header .logo {
       font-size: 1.25rem;
       font-weight: 500;
@@ -107,12 +110,14 @@
       padding: 1rem;
       animation: fadeIn 0.5s ease-out;
     }
+
     aside.sidebar h2 {
       margin-bottom: 1rem;
       font-size: 1.1rem;
       text-align: center;
       color: var(--primary-color);
     }
+
     aside.sidebar p {
       text-align: center;
       opacity: 0.7;
@@ -138,6 +143,7 @@
         opacity: 0;
         transform: translateY(10px);
       }
+
       100% {
         opacity: 1;
         transform: translateY(0);
@@ -174,7 +180,7 @@
       padding: 1.25rem;
       border-radius: var(--border-radius);
       border: 1px solid var(--input-border);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     form {
@@ -210,9 +216,11 @@
       background: var(--input-bg);
       color: var(--text-color);
     }
+
     input:hover {
       border-color: #ccc;
     }
+
     input:focus {
       outline: none;
       border-color: var(--primary-color);
@@ -224,13 +232,16 @@
       display: flex;
       align-items: center;
     }
+
     .input-group input {
       padding-left: 2rem;
     }
+
     .input-group.suffix input {
       padding-right: 3.5rem;
       padding-left: 0.75rem;
     }
+
     .input-prefix,
     .input-suffix {
       position: absolute;
@@ -239,9 +250,11 @@
       pointer-events: none;
       white-space: nowrap;
     }
+
     .input-prefix {
       left: 0.75rem;
     }
+
     .input-suffix {
       right: 0.75rem;
       max-width: 3rem;
@@ -265,12 +278,14 @@
       align-items: center;
       justify-content: center;
     }
+
     button[type="submit"]:hover,
     .cpa-add-btn:hover {
       background: var(--primary-hover);
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(85, 99, 222, 0.2);
     }
+
     button[type="submit"]:active,
     .cpa-add-btn:active {
       transform: translateY(0);
@@ -289,12 +304,14 @@
       gap: 0.75rem;
       grid-column: 1 / -1;
     }
+
     .cpa-input-wrapper {
       display: flex;
       gap: 0.5rem;
       width: 100%;
       max-width: 300px;
     }
+
     .cpa-tags {
       display: flex;
       flex-wrap: wrap;
@@ -308,6 +325,7 @@
       justify-content: center;
       transition: background var(--transition-speed);
     }
+
     .cpa-tags:hover {
       background: #2f2f2f;
     }
@@ -326,17 +344,20 @@
       transition: all var(--transition-speed) ease;
       animation: tagAppear 0.3s ease-out;
     }
+
     .cpa-tag:hover {
       background: var(--primary-color);
       color: white;
       transform: translateY(-1px);
       box-shadow: 0 1px 2px rgba(85, 99, 222, 0.15);
     }
+
     @keyframes tagAppear {
       from {
         opacity: 0;
         transform: scale(0.95);
       }
+
       to {
         opacity: 1;
         transform: scale(1);
@@ -359,11 +380,13 @@
       border-radius: 2px;
       transition: all var(--transition-speed) ease;
     }
+
     .cpa-tag:hover .cpa-tag-remove {
-      background: rgba(0,0,0,0.1);
+      background: rgba(0, 0, 0, 0.1);
     }
+
     .cpa-tag-remove:hover {
-      background: rgba(220,53,69,0.2) !important;
+      background: rgba(220, 53, 69, 0.2) !important;
       color: #dc3545;
       transform: scale(1.1);
     }
@@ -395,9 +418,10 @@
       min-width: 0;
       overflow: hidden;
     }
+
     .result-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     .summary-card {
@@ -460,23 +484,28 @@
       width: fit-content;
       margin-right: auto;
     }
+
     .result-value.highlight {
       font-size: 1.4rem;
     }
 
     .result-item.highlight {
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid transparent;
     }
+
     .result-item.highlight.positive {
-      border-color: rgba(40,167,69,0.4);
+      border-color: rgba(40, 167, 69, 0.4);
     }
+
     .result-item.highlight.negative {
-      border-color: rgba(220,53,69,0.4);
+      border-color: rgba(220, 53, 69, 0.4);
     }
+
     .result-value.positive {
       color: #28a745;
     }
+
     .result-value.negative {
       color: #dc3545;
     }
@@ -495,6 +524,7 @@
       word-break: break-word;
       line-height: 1;
     }
+
     .result-cpa::after {
       content: 'CPA';
       font-size: 0.9rem;
@@ -502,6 +532,7 @@
       font-weight: normal;
       white-space: nowrap;
     }
+
     .result-cac {
       display: flex;
       flex-direction: column;
@@ -509,11 +540,13 @@
       gap: 0.25rem;
       min-width: 0;
     }
+
     .result-cac-label {
       font-size: 0.85rem;
       color: #666;
       white-space: nowrap;
     }
+
     .result-cac-value {
       font-size: 1.25rem;
       font-weight: 500;
@@ -527,6 +560,7 @@
       gap: 0.25rem;
       align-items: center;
     }
+
     .summary-cpa-tag {
       display: inline-flex;
       align-items: center;
@@ -547,19 +581,22 @@
       align-items: center;
       gap: 12px;
     }
+
     .sales-total {
       font-size: 1em;
     }
+
     .sales-breakdown {
       display: flex;
       flex-direction: column;
       font-size: 0.65em;
-      color: rgba(224,224,224,0.7);
+      color: rgba(224, 224, 224, 0.7);
       gap: 2px;
-      border-left: 1px solid rgba(224,224,224,0.2);
+      border-left: 1px solid rgba(224, 224, 224, 0.2);
       padding-left: 12px;
       line-height: 1.2;
     }
+
     .sophisticated {
       font-style: italic;
       opacity: 0.85;
@@ -571,11 +608,13 @@
     #calcHistoryWrapper {
       margin-bottom: 2rem;
     }
+
     #calcHistoryContainer {
       display: grid;
       grid-template-columns: 1fr;
       gap: 1rem;
     }
+
     .history-card {
       background: var(--card-bg);
       box-shadow: 0 2px 4px var(--shadow-color);
@@ -585,10 +624,12 @@
       cursor: pointer;
       font-size: 0.85rem;
     }
+
     .history-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
+
     .history-header {
       font-weight: 600;
       font-size: 0.9rem;
@@ -598,11 +639,13 @@
       border-bottom: 1px solid var(--input-border);
       padding-bottom: 0.3rem;
     }
+
     .history-body {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
+
     .history-item {
       background: var(--inputs-bg);
       border-radius: var(--border-radius);
@@ -613,23 +656,27 @@
       justify-content: center;
       align-items: center;
     }
+
     .history-label {
       font-size: 0.75rem;
       color: #bdc3c7;
       margin-bottom: 0.25rem;
       text-transform: uppercase;
     }
+
     .history-value {
       font-size: 0.95rem;
       font-weight: 500;
       color: var(--text-color);
     }
+
     @media (max-width: 480px) {
       .history-body {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 0.3rem;
       }
+
       .history-item {
         padding: 0.3rem 0.4rem;
       }
@@ -648,25 +695,30 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
+
     .chart-container canvas {
       width: 100% !important;
       height: 450px !important;
       min-width: 300px;
     }
+
     @media (max-width: 768px) {
       .chart-container {
         padding: 1rem;
         margin-top: 1.5rem;
       }
+
       .chart-container canvas {
         height: 350px !important;
       }
     }
+
     @media (max-width: 480px) {
       .chart-container {
         padding: 0.75rem;
         margin-top: 1rem;
       }
+
       .chart-container canvas {
         height: 300px !important;
       }
@@ -679,9 +731,11 @@
       opacity: 0.7;
       pointer-events: none;
     }
+
     .loading button {
       position: relative;
     }
+
     .loading button::after {
       content: '';
       position: absolute;
@@ -695,6 +749,7 @@
       top: 50%;
       transform: translateY(-50%);
     }
+
     @keyframes spin {
       to {
         transform: translateY(-50%) rotate(360deg);
@@ -708,108 +763,139 @@
       .results-grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       }
+
       .result-card {
         padding: 1.25rem;
         gap: 1.25rem;
       }
+
       .result-grid {
         gap: 0.85rem;
       }
+
       .result-item {
         padding: 0.65rem;
       }
     }
+
     @media (max-width: 768px) {
       .container {
         padding: 1rem;
         gap: 1.5rem;
       }
+
       .inputs-section {
         padding: 1rem;
       }
+
       .result-card {
         padding: 1rem;
         gap: 1rem;
       }
+
       .result-header {
         padding-bottom: 0.85rem;
       }
+
       .result-grid {
         gap: 0.75rem;
       }
+
       .result-item {
         padding: 0.6rem;
         gap: 0.3rem;
       }
+
       .result-cpa {
         font-size: 1.75rem;
       }
+
       .result-cac-value {
         font-size: 1.15rem;
       }
+
       .result-value {
         font-size: 1.15rem;
       }
+
       .result-value.highlight {
         font-size: 1.35rem;
       }
     }
+
     @media (max-width: 480px) {
       .container {
         padding: 0.75rem;
       }
+
       h1 {
         font-size: 1.35rem;
       }
+
       .results-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       }
+
       .result-card {
         padding: 0.85rem;
         gap: 0.85rem;
       }
+
       .result-header {
         padding-bottom: 0.75rem;
       }
+
       .result-cpa {
         font-size: 1.5rem;
       }
+
       .result-cac-value {
         font-size: 1rem;
       }
+
       .result-value {
         font-size: 1rem;
       }
+
       .result-value.highlight {
         font-size: 1.15rem;
       }
+
       .result-label {
         font-size: 0.75rem;
       }
     }
+
     @media (max-width: 360px) {
       h1 {
         font-size: 1.2rem;
       }
+
       label {
         font-size: 0.8rem;
       }
+
       input {
         font-size: 0.85rem;
         height: 2.5rem;
       }
+
       .result-cpa {
         font-size: 1.35rem;
       }
+
       .result-cac-value {
         font-size: 0.95rem;
       }
+
       .result-value {
         font-size: 0.95rem;
       }
+
       .result-value.highlight {
         font-size: 1.1rem;
       }
+
       .result-label {
         font-size: 0.7rem;
       }
@@ -869,6 +955,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- HEADER -->
@@ -896,7 +983,7 @@
     <main>
       <div class="container">
         <h1>Calculadora de ROI</h1>
-        
+
         <!-- Formulário -->
         <section class="inputs-section">
           <form id="calcForm" autocomplete="off">
@@ -904,7 +991,7 @@
               <label for="gastos">Gastos com Tráfego</label>
               <div class="input-group">
                 <span class="input-prefix">R$</span>
-                <input type="text" id="gastos" name="gastos" value="" required placeholder="0" inputmode="numeric"/>
+                <input type="text" id="gastos" name="gastos" value="" required placeholder="0" inputmode="numeric" />
                 <span class="input-suffix">/dia</span>
               </div>
             </div>
@@ -912,7 +999,8 @@
             <div class="form-group">
               <label for="dias">Dias de Tráfego</label>
               <div class="input-group suffix">
-                <input type="text" id="dias" name="dias" value="" required placeholder="1" maxlength="3" inputmode="numeric"/>
+                <input type="text" id="dias" name="dias" value="" required placeholder="1" maxlength="3"
+                  inputmode="numeric" />
                 <span class="input-suffix">dias</span>
               </div>
             </div>
@@ -921,14 +1009,14 @@
               <label for="ticket">Ticket do Produto</label>
               <div class="input-group">
                 <span class="input-prefix">R$</span>
-                <input type="text" id="ticket" name="ticket" value="" required placeholder="0,00" inputmode="numeric"/>
+                <input type="text" id="ticket" name="ticket" value="" required placeholder="0,00" inputmode="numeric" />
               </div>
             </div>
 
             <div class="form-group">
               <label for="taxas">Taxas Descontadas</label>
               <div class="input-group suffix">
-                <input type="text" id="taxas" name="taxas" value="" required placeholder="0" inputmode="numeric"/>
+                <input type="text" id="taxas" name="taxas" value="" required placeholder="0" inputmode="numeric" />
                 <span class="input-suffix">%</span>
               </div>
             </div>
@@ -937,7 +1025,8 @@
               <label for="valorDescontado">Valor Descontado</label>
               <div class="input-group">
                 <span class="input-prefix">R$</span>
-                <input type="text" id="valorDescontado" name="valorDescontado" value="" required placeholder="0,00" inputmode="numeric"/>
+                <input type="text" id="valorDescontado" name="valorDescontado" value="" required placeholder="0,00"
+                  inputmode="numeric" />
               </div>
             </div>
 
@@ -946,13 +1035,13 @@
               <div class="cpa-input-container">
                 <div class="cpa-input-wrapper">
                   <div class="input-group suffix">
-                    <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric"/>
+                    <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric" />
                     <span class="input-suffix">%</span>
                   </div>
                   <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
                 </div>
                 <div class="cpa-tags" id="cpaTags"></div>
-                <input type="hidden" id="cpa" name="cpa" required/>
+                <input type="hidden" id="cpa" name="cpa" required />
               </div>
             </div>
 
@@ -1011,7 +1100,7 @@
     // --------- FORMATAÇÃO CAMPOS - GASTOS, TICKET, VALOR DESCONTADO ----------
     ['gastos', 'ticket', 'valorDescontado'].forEach(id => {
       const input = document.getElementById(id);
-      const showDecimals = (id !== 'gastos'); 
+      const showDecimals = (id !== 'gastos');
       input.addEventListener('input', function (e) {
         let value = e.target.value.replace(/\D/g, '');
         if (showDecimals && value.length > 10) {
@@ -1322,7 +1411,7 @@
               <div class="result-item">
                 <div class="result-label">Gastos com Tráfego</div>
                 <div class="result-value">
-                  ${formatCurrency(gastos)} / ${dias} dia${dias>1?'s':''}
+                  ${formatCurrency(gastos)} / ${dias} dia${dias > 1 ? 's' : ''}
                 </div>
               </div>
               <div class="result-item">
@@ -1362,18 +1451,18 @@
                   <div class="result-value sales-details">
                     <div class="sales-total">~ ${formatCompactNumber(qtdVendas)}</div>
                     <div class="sales-breakdown">
-                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias))} · dia</span>
-                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas/dias/12))} · hora</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas / dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas / dias / 12))} · hora</span>
                     </div>
                   </div>
                 </div>
                 <div class="result-item">
                   <div class="result-label">Break-even</div>
                   <div class="result-value sales-details">
-                    <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket*cpaDecimal))) )}</div>
+                    <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - custosPorVenda)))}</div>
                     <div class="sales-breakdown">
-                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket * cpaDecimal)))/dias))} · dia</span>
-                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda - (ticket * cpaDecimal)))/dias/12))} · hora</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda)) / dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda)) / dias / 12))} · hora</span>
                     </div>
                   </div>
                 </div>
@@ -1431,7 +1520,7 @@
         const lucroLiquidoData = cpaList.map(cpa => {
           const cpaDecimal = cpa / 100;
           const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-          return round((ticket - (ticket*(taxas/100) + valorDescontado)) * qtdVendas - totalGastos, 2);
+          return round((ticket - (ticket * (taxas / 100) + valorDescontado)) * qtdVendas - totalGastos, 2);
         });
         const faturamentoData = cpaList.map(cpa => {
           const cpaDecimal = cpa / 100;
@@ -1611,7 +1700,7 @@
     document.addEventListener('DOMContentLoaded', adjustResultValues);
 
     // Adicionar código do menu hamburger no final do arquivo
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const menuToggle = document.querySelector('.menu-toggle');
       const sidebar = document.querySelector('.sidebar');
       const overlay = document.querySelector('.overlay');
@@ -1626,4 +1715,5 @@
     });
   </script>
 </body>
+
 </html>
