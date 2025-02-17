@@ -1185,56 +1185,50 @@
       const addBtn = document.getElementById('cpaAdd');
       const tagsContainer = document.getElementById('cpaTags');
       const hiddenInput = document.getElementById('cpa');
-      
-      // Inicializa cpaValues do localStorage ou usa valores padrão
-      let cpaValues = [];
-      const savedValues = localStorage.getItem('roiCalculatorValues');
-      if (savedValues) {
-        const formValues = JSON.parse(savedValues);
-        if (formValues.cpaValues) {
-          cpaValues = formValues.cpaValues
-            .split(/\r?\n/)
-            .map(item => parseFloat(item.trim()))
-            .filter(item => !isNaN(item))
-            .sort((a, b) => a - b);
+
+      // Inicializa localStorage com valores padrão se não existir
+      if (!localStorage.getItem('roiCalculatorValues')) {
+        const defaultValues = {
+          gastos: "",
+          dias: "",
+          ticket: "",
+          taxas: "",
+          valorDescontado: "",
+          cpaValues: "30\n40\n50\n60"
+        };
+        localStorage.setItem('roiCalculatorValues', JSON.stringify(defaultValues));
+      }
+
+      let cpaValues = loadCPAValuesFromStorage();
+
+      // Event delegation para ambas as ações
+      tagsContainer.addEventListener('click', handleContainerClick);
+      addBtn.addEventListener('click', handleAddCPA);
+      input.addEventListener('keypress', handleKeyPress);
+
+      function handleContainerClick(e) {
+        if (e.target.classList.contains('cpa-tag-remove')) {
+          const tagElement = e.target.closest('.cpa-tag');
+          const tagValue = parseFloat(tagElement.textContent.replace(/[^\d.]/g, ''));
+
+          cpaValues = cpaValues.filter(v => v !== tagValue);
+          saveCPAValuesToStorage();
+          renderTags();
         }
       }
-      
-      // Se não houver valores salvos, usa os valores padrão
-      if (cpaValues.length === 0) {
-        cpaValues = [30, 40, 50, 60];
+
+      function handleAddCPA() {
+        const value = input.value.trim();
+        if (value) {
+          addCPA(value);
+        }
       }
 
-      /**
-       * Atualiza o valor do input hidden "cpa" com os valores dos CPAs e
-       * atualiza o localStorage com os valores atuais do formulário.
-       */
-      function updateHiddenInput() {
-        hiddenInput.value = cpaValues.join('\n');
-        // Atualiza localStorage
-        const formValues = localStorage.getItem('roiCalculatorValues');
-        const currentValues = formValues ? JSON.parse(formValues) : {};
-        currentValues.cpaValues = hiddenInput.value;
-        localStorage.setItem('roiCalculatorValues', JSON.stringify(currentValues));
-      }
-
-      function addTag(value) {
-        const tag = document.createElement('div');
-        tag.className = 'cpa-tag';
-        tag.innerHTML = `
-          ${Math.round(value)}%
-          <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
-        `;
-        tag.querySelector('.cpa-tag-remove').addEventListener('click', () => {
-          tag.style.transform = 'scale(0.8)';
-          tag.style.opacity = '0';
-          setTimeout(() => {
-            cpaValues = cpaValues.filter(v => v !== value);
-            tag.remove();
-            updateHiddenInput();
-          }, 200);
-        });
-        tagsContainer.appendChild(tag);
+      function handleKeyPress(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAddCPA();
+        }
       }
 
       function addCPA(value) {
@@ -1243,28 +1237,54 @@
           if (!cpaValues.includes(numValue)) {
             cpaValues.push(numValue);
             cpaValues.sort((a, b) => a - b);
-            tagsContainer.innerHTML = '';
-            cpaValues.forEach(val => addTag(val));
-            updateHiddenInput();
+            saveCPAValuesToStorage();
+            renderTags();
             input.value = '';
           }
         }
       }
 
-      // Renderiza as tags iniciais
-      cpaValues.forEach(val => addTag(val));
+      function loadCPAValuesFromStorage() {
+        const savedValues = localStorage.getItem('roiCalculatorValues');
+        const formValues = JSON.parse(savedValues);
+        const cpaData = formValues.cpaValues
+          .split('\n')
+          .filter(item => item.trim() !== '')
+          .map(item => parseFloat(item))
+          .sort((a, b) => a - b);
+
+        return cpaData.length > 0 ? cpaData : [30, 40, 50, 60]; // Fallback
+      }
+
+      function saveCPAValuesToStorage() {
+        const formValues = localStorage.getItem('roiCalculatorValues');
+        const currentValues = formValues ? JSON.parse(formValues) : {};
+        currentValues.cpaValues = cpaValues.join('\n');
+        localStorage.setItem('roiCalculatorValues', JSON.stringify(currentValues));
+        updateHiddenInput();
+      }
+
+      function renderTags() {
+        tagsContainer.innerHTML = '';
+        cpaValues.forEach(value => {
+          const tag = document.createElement('div');
+          tag.className = 'cpa-tag';
+          tag.innerHTML = `
+            ${Math.round(value)}%
+            <button type="button" class="cpa-tag-remove" aria-label="Remover CPA">&times;</button>
+          `;
+          tagsContainer.appendChild(tag);
+        });
+        updateHiddenInput();
+      }
+
+      function updateHiddenInput() {
+        hiddenInput.value = cpaValues.join('\n');
+      }
+
+      // Inicialização
+      renderTags();
       updateHiddenInput();
-
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addCPA(input.value);
-        }
-      });
-
-      addBtn.addEventListener('click', () => {
-        addCPA(input.value);
-      });
     }
     setupCPAInput();
 
