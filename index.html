@@ -1029,6 +1029,21 @@
               </div>
             </div>
 
+            <div class="form-group">
+              <label for="cpaInput">CPAs (%)</label>
+              <div class="cpa-input-container">
+                <div class="cpa-input-wrapper">
+                  <div class="input-group suffix">
+                    <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric" />
+                    <span class="input-suffix">%</span>
+                  </div>
+                  <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
+                </div>
+                <div class="cpa-tags" id="cpaTags"></div>
+                <input type="hidden" id="cpa" name="cpa" required />
+              </div>
+            </div>
+
             <!-- NOVOS CAMPOS DE PÓS-SELL -->
             <div class="form-group">
               <label for="posSellPercent">Conversão Pós-sell</label>
@@ -1046,21 +1061,6 @@
               </div>
             </div>
             <!-- FIM NOVOS CAMPOS DE PÓS-SELL -->
-
-            <div class="form-group">
-              <label for="cpaInput">CPAs (%)</label>
-              <div class="cpa-input-container">
-                <div class="cpa-input-wrapper">
-                  <div class="input-group suffix">
-                    <input type="text" id="cpaInput" placeholder="0" maxlength="2" inputmode="numeric" />
-                    <span class="input-suffix">%</span>
-                  </div>
-                  <button type="button" class="cpa-add-btn" id="cpaAdd">+</button>
-                </div>
-                <div class="cpa-tags" id="cpaTags"></div>
-                <input type="hidden" id="cpa" name="cpa" required />
-              </div>
-            </div>
 
             <button type="submit" class="full-width">Calcular ROI</button>
           </form>
