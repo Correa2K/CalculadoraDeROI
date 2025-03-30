@@ -1029,6 +1029,24 @@
               </div>
             </div>
 
+            <!-- NOVOS CAMPOS DE PÓS-SELL -->
+            <div class="form-group">
+              <label for="posSellPercent">Conversão Pós-sell</label>
+              <div class="input-group suffix">
+                <input type="text" id="posSellPercent" name="posSellPercent" placeholder="0" inputmode="numeric" />
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="posSellValor">Ticket do Pós-sell</label>
+              <div class="input-group">
+                <span class="input-prefix">R$</span>
+                <input type="text" id="posSellValor" name="posSellValor" placeholder="0,00" inputmode="numeric" />
+              </div>
+            </div>
+            <!-- FIM NOVOS CAMPOS DE PÓS-SELL -->
+
             <div class="form-group">
               <label for="cpaInput">CPAs (%)</label>
               <div class="cpa-input-container">
@@ -1054,7 +1072,7 @@
     </main>
   </div>
 
-  <!-- SCRIPT PRINCIPAL (Mesmo JS, com ajustes mínimos) -->
+  <!-- SCRIPT PRINCIPAL -->
   <script>
     // --------- Utility functions ----------
     function round(value, decimals) {
@@ -1096,10 +1114,10 @@
       return value;
     }
 
-    // --------- FORMATAÇÃO CAMPOS - GASTOS, TICKET, VALOR DESCONTADO ----------
-    ['gastos', 'ticket', 'valorDescontado'].forEach(id => {
+    // --------- FORMATAÇÃO CAMPOS - GASTOS, TICKET, VALOR DESCONTADO, PÓS-SELL ----------
+    ['gastos', 'ticket', 'valorDescontado', 'posSellValor'].forEach(id => {
       const input = document.getElementById(id);
-      const showDecimals = (id !== 'gastos');
+      const showDecimals = (id !== 'gastos');  // para "gastos" poderíamos permitir só inteiro, mas pode haver valor decimal também
       input.addEventListener('input', function (e) {
         let value = e.target.value.replace(/\D/g, '');
         if (showDecimals && value.length > 10) {
@@ -1169,6 +1187,21 @@
       }
     });
 
+    // --------- POS SELL PERCENT (limite 2 dígitos) ----------
+    const posSellPercentInput = document.getElementById('posSellPercent');
+    posSellPercentInput.addEventListener('input', function (e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 2) {
+        value = value.slice(0, 2);
+      }
+      e.target.value = value;
+    });
+    posSellPercentInput.addEventListener('blur', function(e){
+      if(!e.target.value.trim()){
+        e.target.value = '0';
+      }
+    });
+
     // --------- CPA INPUT (limite 2 dígitos) ----------
     const cpaInput = document.getElementById('cpaInput');
     cpaInput.addEventListener('input', function (e) {
@@ -1194,6 +1227,8 @@
           ticket: "",
           taxas: "",
           valorDescontado: "",
+          posSellPercent: "",
+          posSellValor: "",
           cpaValues: "30\n40\n50\n60"
         };
         localStorage.setItem('roiCalculatorValues', JSON.stringify(defaultValues));
@@ -1296,6 +1331,8 @@
         ticket: document.getElementById("ticket").value,
         taxas: document.getElementById("taxas").value,
         valorDescontado: document.getElementById("valorDescontado").value,
+        posSellPercent: document.getElementById("posSellPercent").value,
+        posSellValor: document.getElementById("posSellValor").value,
         cpaValues: document.getElementById("cpa").value
       };
       localStorage.setItem('roiCalculatorValues', JSON.stringify(formValues));
@@ -1304,11 +1341,15 @@
       const savedValues = localStorage.getItem('roiCalculatorValues');
       if (savedValues) {
         const formValues = JSON.parse(savedValues);
+
         document.getElementById("gastos").value = formValues.gastos;
         document.getElementById("dias").value = formValues.dias;
         document.getElementById("ticket").value = formValues.ticket;
         document.getElementById("taxas").value = formValues.taxas;
         document.getElementById("valorDescontado").value = formValues.valorDescontado;
+        document.getElementById("posSellPercent").value = formValues.posSellPercent || "0";
+        document.getElementById("posSellValor").value = formValues.posSellValor || "0";
+
         const cpaTags = document.getElementById("cpaTags");
         cpaTags.innerHTML = '';
         const cpaList = formValues.cpaValues
@@ -1317,6 +1358,7 @@
           .filter(item => item !== "")
           .map(item => parseFloat(item))
           .sort((a, b) => a - b);
+
         document.getElementById("cpa").value = formValues.cpaValues;
         cpaList.forEach(value => {
           const tag = document.createElement('div');
@@ -1393,6 +1435,10 @@
               <span class="history-value">${entry.formValues.taxas}% + R$ ${entry.formValues.valorDescontado}</span>
             </div>
             <div class="history-item">
+              <span class="history-label">Pós-sell (%)</span>
+              <span class="history-value">${entry.formValues.posSellPercent}% / R$ ${entry.formValues.posSellValor}</span>
+            </div>
+            <div class="history-item">
               <span class="history-label">CPAs</span>
               <span class="history-value">${cpaSummary}</span>
             </div>
@@ -1423,6 +1469,11 @@
         const ticket = parseFloat(document.getElementById("ticket").value.replace(/\./g, '').replace(',', '.')) || 0;
         const taxas = parseFloat(document.getElementById("taxas").value.replace(/\./g, '').replace(',', '.')) || 0;
         const valorDescontado = parseFloat(document.getElementById("valorDescontado").value.replace(/\./g, '').replace(',', '.')) || 0;
+
+        // NOVOS CAMPOS DE PÓS-SELL
+        const posSellPercent = parseFloat(document.getElementById("posSellPercent").value) || 0;
+        const posSellValor = parseFloat(document.getElementById("posSellValor").value.replace(/\./g, '').replace(',', '.')) || 0;
+
         const cpaInput = document.getElementById("cpa").value;
         let cpaList = cpaInput
           .split(/\r?\n/)
@@ -1440,8 +1491,10 @@
         const totalGastos = gastos * dias;
         let html = "";
 
-        // Calcular Break-even point (usado pra exibir no card)
-        const custosPorVenda = ticket * (taxas / 100) + valorDescontado;
+        // Calcular custo por venda do produto principal
+        const custosPorVendaPrincipal = ticket * (taxas / 100) + valorDescontado;
+        // Custo por venda do pós-sell (mesmas taxas para simplificar)
+        const custosPorVendaPosSell = posSellValor * (taxas / 100) + valorDescontado;
 
         // Card de Resumo
         html += `
@@ -1457,7 +1510,7 @@
               <div class="result-item">
                 <div class="result-label">Taxa por Venda</div>
                 <div class="result-value">
-                  ${formatCurrency(ticket * (taxas / 100) + valorDescontado)}
+                  ${formatCurrency(custosPorVendaPrincipal)}
                   - (${taxas}% + ${formatCurrency(valorDescontado)})
                 </div>
               </div>
@@ -1473,6 +1526,12 @@
                   ${cpaList.map(cpa => `<span class="summary-cpa-tag">${Math.round(cpa)}%</span>`).join('')}
                 </div>
               </div>
+              <div class="result-item">
+                <div class="result-label">Pós-sell (%)</div>
+                <div class="result-value">
+                  ${posSellPercent || 0}% (${formatCurrency(posSellValor || 0)})
+                </div>
+              </div>
             </div>
           </div>
           <div class="results-grid">
@@ -1481,47 +1540,59 @@
         // Detalhes para cada CPA
         cpaList.forEach(cpa => {
           const cpaDecimal = cpa / 100;
-          const cac = round(ticket * cpaDecimal, 2);
-          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-          const faturamento = round(qtdVendas * ticket, 2);
-          const taxasTotais = round(qtdVendas * (custosPorVenda), 2);
-          const lucro = round(
-            (ticket - custosPorVenda) * qtdVendas - totalGastos,
-            2
-          );
+
+          // Vendas do produto principal
+          const qtdVendasPrincipal = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+          
+          // Vendas do pós-sell (com base na % de conversão)
+          const qtdVendasPosSell = Math.floor(qtdVendasPrincipal * (posSellPercent / 100));
+
+          // Faturamentos
+          const faturamentoPrincipal = round(qtdVendasPrincipal * ticket, 2);
+          const faturamentoPosSell = round(qtdVendasPosSell * posSellValor, 2);
+          const faturamentoTotal = faturamentoPrincipal + faturamentoPosSell;
+
+          // Taxas totais (produto principal + pós-sell)
+          const taxasTotaisPrincipal = round(qtdVendasPrincipal * custosPorVendaPrincipal, 2);
+          const taxasTotaisPosSell = round(qtdVendasPosSell * custosPorVendaPosSell, 2);
+          const taxasTotais = taxasTotaisPrincipal + taxasTotaisPosSell;
+
+          // Lucro líquido
+          const lucro = round(faturamentoTotal - taxasTotais - totalGastos, 2);
+
           html += `
             <div class="result-card">
               <div class="result-header">
                 <div class="result-cpa">${Math.round(cpa)}%</div>
                 <div class="result-cac">
                   <span class="result-cac-label">Custo de Aquisição</span>
-                  <span class="result-cac-value">${formatCurrency(cac)}</span>
+                  <span class="result-cac-value">${formatCurrency(ticket * cpaDecimal)}</span>
                 </div>
               </div>
               <div class="result-grid">
                 <div class="result-item">
                   <div class="result-label">Qtd. Vendas</div>
                   <div class="result-value sales-details">
-                    <div class="sales-total">~ ${formatCompactNumber(qtdVendas)}</div>
+                    <div class="sales-total">~ ${formatCompactNumber(qtdVendasPrincipal)}</div>
                     <div class="sales-breakdown">
-                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas / dias))} · dia</span>
-                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendas / dias / 12))} · hora</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendasPrincipal / dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendasPrincipal / dias / 12))} · hora</span>
                     </div>
                   </div>
                 </div>
                 <div class="result-item">
-                  <div class="result-label">Break-even</div>
+                  <div class="result-label">Vendas Pós-sell</div>
                   <div class="result-value sales-details">
-                    <div class="sales-total">~ ${formatCompactNumber(Math.ceil(totalGastos / (ticket - custosPorVenda)))}</div>
+                    <div class="sales-total">~ ${formatCompactNumber(qtdVendasPosSell)}</div>
                     <div class="sales-breakdown">
-                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda)) / dias))} · dia</span>
-                      <span class="sophisticated">${formatCompactNumber(Math.round(Math.ceil(totalGastos / (ticket - custosPorVenda)) / dias / 12))} · hora</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendasPosSell / dias))} · dia</span>
+                      <span class="sophisticated">${formatCompactNumber(Math.round(qtdVendasPosSell / dias / 12))} · hora</span>
                     </div>
                   </div>
                 </div>
                 <div class="result-item">
-                  <div class="result-label">Faturamento</div>
-                  <div class="result-value">${formatCurrency(faturamento)}</div>
+                  <div class="result-label">Faturamento Total</div>
+                  <div class="result-value">${formatCurrency(faturamentoTotal)}</div>
                 </div>
                 <div class="result-item">
                   <div class="result-label">Total em Taxas</div>
@@ -1530,25 +1601,25 @@
                 <div class="result-item">
                   <div class="result-label">Lucro Bruto</div>
                   <div class="result-value">
-                    ${formatCurrency(faturamento - taxasTotais)}
+                    ${formatCurrency(faturamentoTotal - taxasTotais)}
                   </div>
                 </div>
                 <div class="result-item">
                   <div class="result-label">ROI BRUTO (x)</div>
                   <div class="result-value">
-                    ${formatNumber((faturamento - taxasTotais) / totalGastos)}x
+                    ${formatNumber((faturamentoTotal - taxasTotais) / totalGastos)}x
                   </div>
                 </div>
                 <div class="result-item highlight ${lucro >= 0 ? 'positive' : 'negative'}">
-                  <div class="result-label">ROI LIQUIDO (R$)</div>
+                  <div class="result-label">ROI LÍQUIDO (R$)</div>
                   <div class="result-value highlight ${lucro >= 0 ? 'positive' : 'negative'}">
                     ${formatCurrency(lucro)}
                   </div>
                 </div>
-                <div class="result-item highlight ${(faturamento - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
+                <div class="result-item highlight ${(faturamentoTotal - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
                   <div class="result-label">ROI LÍQUIDO (x)</div>
-                  <div class="result-value highlight ${(faturamento - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
-                    ${formatNumber((faturamento - taxasTotais - totalGastos) / totalGastos)}x
+                  <div class="result-value highlight ${(faturamentoTotal - taxasTotais - totalGastos) >= 0 ? 'positive' : 'negative'}">
+                    ${formatNumber((faturamentoTotal - taxasTotais - totalGastos) / totalGastos)}x
                   </div>
                 </div>
               </div>
@@ -1566,19 +1637,25 @@
         document.getElementById("result").innerHTML = html;
 
         // --------- Montar dados para o Chart ----------
-        const qtdVendasData = cpaList.map(cpa => {
+        const qtdVendasData = [];
+        const lucroLiquidoData = [];
+        const faturamentoData = [];
+
+        cpaList.forEach(cpa => {
           const cpaDecimal = cpa / 100;
-          return Math.floor((gastos * dias) / (ticket * cpaDecimal));
-        });
-        const lucroLiquidoData = cpaList.map(cpa => {
-          const cpaDecimal = cpa / 100;
-          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-          return round((ticket - (ticket * (taxas / 100) + valorDescontado)) * qtdVendas - totalGastos, 2);
-        });
-        const faturamentoData = cpaList.map(cpa => {
-          const cpaDecimal = cpa / 100;
-          const qtdVendas = Math.floor((gastos * dias) / (ticket * cpaDecimal));
-          return round(qtdVendas * ticket, 2);
+          const qtdVendasPrincipal = Math.floor((gastos * dias) / (ticket * cpaDecimal));
+          const qtdVendasPosSell = Math.floor(qtdVendasPrincipal * (posSellPercent / 100));
+          const faturamentoPrincipal = round(qtdVendasPrincipal * ticket, 2);
+          const faturamentoPosSell = round(qtdVendasPosSell * posSellValor, 2);
+          const faturamentoTotal = faturamentoPrincipal + faturamentoPosSell;
+          const taxasTotaisPrincipal = round(qtdVendasPrincipal * (ticket * (taxas / 100) + valorDescontado), 2);
+          const taxasTotaisPosSell = round(qtdVendasPosSell * (posSellValor * (taxas / 100) + valorDescontado), 2);
+          const taxasTotais = taxasTotaisPrincipal + taxasTotaisPosSell;
+          const lucro = round(faturamentoTotal - taxasTotais - (gastos * dias), 2);
+
+          qtdVendasData.push(qtdVendasPrincipal);
+          lucroLiquidoData.push(lucro);
+          faturamentoData.push(faturamentoTotal);
         });
 
         const ctx = document.getElementById('resultsChart').getContext('2d');
