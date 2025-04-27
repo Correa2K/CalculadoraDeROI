@@ -2275,6 +2275,10 @@ document.getElementById("calcForm").addEventListener("submit", function(e) {
                     `${Math.round(cpaValue)}%` :
                     formatCurrency(cpaValue);
 
+                // Adiciona o cálculo da porcentagem do CPA em relação ao ticket quando no modo fixo
+                const cpaPercentOfTicket = ticket > 0 && activeCpaMode === 'fixed' ? 
+                    round((cpaValue / ticket) * 100, 1) : 0;
+
                 // --- HTML do Card CPA ---
                 html += `
                 <div class="result-card">
@@ -2282,7 +2286,11 @@ document.getElementById("calcForm").addEventListener("submit", function(e) {
                     <div class="result-cpa">${displayCpaValue}</div>
                     <div class="result-cac">
                     <span class="result-cac-label">Custo de Aquisição</span>
-                    <span class="result-cac-value">${formatCurrency(calculatedCac)}</span>
+                    <span class="result-cac-value">${
+                        activeCpaMode === 'percentage' ? 
+                        formatCurrency(calculatedCac) : 
+                        `${cpaPercentOfTicket}%`
+                    }</span>
                     </div>
                 </div>
                 <div class="result-grid">
