@@ -186,7 +186,7 @@
     
             const percentLabel = document.createElement('label');
             percentLabel.htmlFor = `posSellPercent_${i}`;
-            percentLabel.textContent = `Conversão Pós-sell ${i}`;
+            percentLabel.textContent = `Conversão PS ${i}`;
             percentGroup.appendChild(percentLabel);
     
             const percentInputDiv = document.createElement('div');
@@ -225,7 +225,7 @@
     
             const valorLabel = document.createElement('label');
             valorLabel.htmlFor = `posSellValor_${i}`;
-            valorLabel.textContent = `Ticket Pós-sell ${i}`;
+            valorLabel.textContent = `Ticket PS ${i}`;
             valorGroup.appendChild(valorLabel);
     
             const valorInputDiv = document.createElement('div');
