@@ -260,7 +260,7 @@
   }
   
   .input-group.prefix.suffix input {
-     padding-left: 1.35rem; /* Keep left padding if both prefix and suffix */
+     padding-left: 1.45rem; /* Keep left padding if both prefix and suffix */
      padding-right: 2rem; /* Reduzido de 3.5rem */
   }
   
