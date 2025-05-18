@@ -243,7 +243,7 @@
             valorInput.placeholder = '0,00';
             valorInput.inputMode = 'numeric';
             valorInput.dataset.index = i - 1; // Guardar índice para salvar
-            valorInput.value = formatNumber(savedItem.valor || 0, 2); // Carrega valor formatado
+            valorInput.value = savedItem.valor ? formatNumber(savedItem.valor, 2) : '';
             valorInput.addEventListener('input', (e) => handleMoneyInput(e, true)); // Aplica formatação
             valorInput.addEventListener('blur', (e) => handleMoneyInput(e, true)); // Aplica no blur tbm
             valorInputDiv.appendChild(valorInput);
@@ -300,7 +300,7 @@
         // Sempre salvamos o valor atual do currentPosSellData no hidden input,
         // independente de count ser zero ou não
         posSellsDataInput.value = JSON.stringify(currentPosSellData);
-        saveFormValues(); // Salva no localStorage
+        // saveFormValues(); // Salva no localStorage // REMOVIDO: Não salvar mais aqui
     }
     
     
@@ -319,7 +319,7 @@
         if (count === 0) {
             // Não reconstruímos currentPosSellData quando count=0, mantemos o que já temos
             // Como generatePosSellInputs não apaga mais currentPosSellData, os dados são preservados
-            saveFormValues(); // Salva para garantir persistência
+            // saveFormValues(); // REMOVIDO: Salva para garantir persistência
         }
     });
     
@@ -853,16 +853,19 @@
                     .map(item => parseFloat(item))
                     .sort((a, b) => a - b);
     
-                // NOVA LÓGICA PARA posSells (MANTER ESTA SEÇÃO):
-                const numPosSellsSalvo = parseInt(savedData.numPosSells || '0', 10);
-                let todosPosSellsSalvos = [];
-                try {
-                    todosPosSellsSalvos = JSON.parse(savedData.posSellsData || '[]');
-                } catch (e) {
-                    console.error("Erro ao parsear posSellsData do localStorage para cálculo:", e);
-                    todosPosSellsSalvos = [];
+                // NOVA LÓGICA PARA posSells (LEITURA DIRETA DOS INPUTS):
+                const numPosSellsAtual = parseInt(document.getElementById('numPosSells').value, 10);
+                const posSells = [];
+                if (numPosSellsAtual > 0) {
+                    for (let i = 1; i <= numPosSellsAtual; i++) {
+                        const percentInput = document.getElementById(`posSellPercent_${i}`);
+                        const valorInput = document.getElementById(`posSellValor_${i}`);
+                        posSells.push({
+                            percent: parseInt(percentInput?.dataset.rawValue || '0', 10),
+                            valor: parseFloat(valorInput?.dataset.rawValue || '0')
+                        });
+                    }
                 }
-                const posSells = todosPosSellsSalvos.slice(0, numPosSellsSalvo); 
                 // FIM DA NOVA LÓGICA PARA posSells
     
                 // Validação básica
